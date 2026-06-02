@@ -1,0 +1,56 @@
+name: Build Appetize iOS Simulator ZIP
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build web assets
+        run: npm run build:web
+
+      - name: Sync Capacitor iOS
+        run: npx cap sync ios
+
+      - name: Install CocoaPods
+        run: |
+          cd ios/App
+          pod install
+
+      - name: Build iOS Simulator app
+        run: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/ios-sim \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package .app for Appetize
+        run: |
+          APP_PATH=$(find build/ios-sim -name "*.app" -type d | head -n 1)
+          echo "Found app: $APP_PATH"
+          mkdir -p appetize-output
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" appetize-output/FaceMaxAI-Appetize-Simulator.app.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FaceMaxAI-Appetize-Simulator-app-zip
+          path: appetize-output/FaceMaxAI-Appetize-Simulator.app.zip
