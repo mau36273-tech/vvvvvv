@@ -82,12 +82,29 @@
     return null; // Web flow handled by the existing <input type="file"> path.
   };
 
+
+  // -------------------- Apple Vision face landmarks (native iOS) --------------------
+  // Visual-only helper for the premium scan animation. It runs locally on iPhone
+  // through Apple's Vision framework and returns normalized points for drawing.
+  // It never replaces the real AI/Worker analysis.
+  facemax.appleVisionDetect = async function (dataUrl) {
+    try {
+      const FaceVision = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.FaceVision;
+      if (!facemax.native || !FaceVision || typeof FaceVision.detect !== "function" || !dataUrl) return null;
+      return await FaceVision.detect({ image: dataUrl });
+    } catch (e) {
+      console.warn("[facemax] Apple Vision unavailable", e);
+      return null;
+    }
+  };
+
   // -------------------- Subscriptions (RevenueCat on native) --------------------
 
   // Mapping between our backend plan names and Apple product IDs.
   facemax.products = {
     weekly:   { appleId: "ai.facemax.app.weekly",   plan: "starter", entitlement: "premium" },
     monthly:  { appleId: "ai.facemax.app.monthly",  plan: "full",    entitlement: "premium" },
+    yearly:   { appleId: "ai.facemax.app.yearly",   plan: "yearly",  entitlement: "premium" },
     lifetime: { appleId: "ai.facemax.app.lifetime", plan: "lifetime", entitlement: "premium" },
   };
 
