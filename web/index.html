@@ -4,8 +4,8 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="build-version" content="v-apple-vision-scan-fx-20260602">
-  <!-- BUILD: v-apple-vision-scan-fx-20260602 -->
+  <meta name="build-version" content="v-mediapipe-clean-paywall-20260602">
+  <!-- BUILD: v-mediapipe-clean-paywall-20260602 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#100A14">
@@ -7566,6 +7566,184 @@ document.addEventListener("visibilitychange", () => {
   window.FACEMAX_REVENUECAT_API_KEY = "";
 </script>
 <script src="js/native-bridge.js"></script>
+
+<style id="fm-mediapipe-clean-patch">
+/* === CLEAN PATCH: MediaPipe-only scan FX + compact paywall + fixed screens === */
+html.fm-quiz-active #quizResult.screen.active{height:100dvh!important;max-height:100dvh!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))!important;}
+#quizResult .quiz-shell{min-height:100%;height:auto!important;overflow:visible!important;padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important;}
+#quizResult .qr-close{display:none!important;}
+#quizResult .qr-footer{position:sticky!important;bottom:0!important;z-index:30!important;padding:14px 0 max(12px,env(safe-area-inset-bottom,0px))!important;background:linear-gradient(180deg,rgba(16,10,20,0),rgba(16,10,20,.94) 34%,#100A14 100%)!important;}
+#quizResult .btn-scanface{height:58px!important;font-size:16px!important;border-radius:16px!important;}
+
+/* Gender back arrow must not sit on the headline/subtitle */
+#genderSelect .onb-back{top:calc(env(safe-area-inset-top,0px) + 6px)!important;left:14px!important;width:36px!important;height:36px!important;font-size:28px!important;z-index:20!important;}
+#genderSelect .onb-head{padding-top:34px!important;margin-bottom:10px!important;}
+#genderSelect .onb-title{font-size:28px!important;line-height:1.08!important;}
+#genderSelect .onb-sub{font-size:14px!important;line-height:1.35!important;max-width:300px!important;}
+
+/* Capture/gender full-screen stability */
+html.fm-fixed-screen #genderSelect.screen.active,
+html.fm-fixed-screen #capture.screen.active{height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;}
+html.fm-fixed-screen #genderSelect .quiz-shell,
+html.fm-fixed-screen #capture .quiz-shell{height:100%!important;max-height:100%!important;overflow:hidden!important;}
+html.fm-fixed-screen #capture .quiz-top{margin-bottom:10px!important;}
+html.fm-fixed-screen #capture .onb-head{margin-bottom:8px!important;}
+html.fm-fixed-screen #capture .onb-title{font-size:26px!important;line-height:1.08!important;}
+html.fm-fixed-screen #capture .onb-sub{font-size:13px!important;line-height:1.35!important;}
+html.fm-fixed-screen #capture .cap-stage{min-height:0!important;flex:1 1 auto!important;justify-content:center!important;}
+html.fm-fixed-screen #capture .onb-foot{flex:0 0 auto!important;margin-top:auto!important;padding-top:10px!important;}
+
+/* Paywall after photos: only three subscription choices, no extra copy/skip/buy strip. */
+#quizPaywall.fm-after-capture .qp-hero,
+#quizPaywall.fm-after-capture #qpInsights,
+#quizPaywall.fm-after-capture .qp-trust,
+#quizPaywall.fm-after-capture .qp-footer,
+#quizPaywall.fm-after-capture .qp-pay-disclosure,
+#quizPaywall.fm-after-capture #qpSkipBtn,
+#quizPaywall.fm-after-capture #quizPayBtn,
+#quizPaywall.fm-after-capture .qp-restore,
+#quizPaywall.fm-after-capture .qp-urgency{display:none!important;}
+#quizPaywall.fm-after-capture .quiz-shell{height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;padding:calc(env(safe-area-inset-top,0px) + 28px) 6px max(22px,env(safe-area-inset-bottom,0px))!important;display:flex!important;flex-direction:column!important;justify-content:center!important;}
+#quizPaywall.fm-after-capture #qpPlans{display:flex!important;flex-direction:column!important;gap:14px!important;margin:0!important;}
+#quizPaywall.fm-after-capture .qp-plan{min-height:88px!important;padding:18px 18px!important;border-radius:18px!important;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.03))!important;}
+#quizPaywall.fm-after-capture .qp-plan.selected{box-shadow:0 0 0 2px rgba(167,139,250,.9),0 18px 44px rgba(167,139,250,.28)!important;}
+#quizPaywall.fm-after-capture .qp-plan-price b{font-size:20px!important;}
+#quizPaywall.fm-after-capture .qp-plan-main b{font-size:16px!important;}
+#quizPaywall.fm-after-capture .qp-plan-main span{font-size:12px!important;color:rgba(255,255,255,.66)!important;}
+
+/* Loading FX: no cheap sweep line. MediaPipe mesh appears only on this screen. */
+#loading .scan-beam{display:none!important;animation:none!important;opacity:0!important;}
+#loading .scan-photo::after{display:none!important;}
+#loading .face-canvas{display:block!important;opacity:1!important;mix-blend-mode:screen;}
+#result canvas.face-canvas,#result #resultCanvas,#tool #toolCanvas{display:none!important;}
+#loading .scan-photo{box-shadow:0 0 0 1px rgba(196,181,253,.20),0 0 55px rgba(167,139,250,.24),0 22px 70px rgba(0,0,0,.55)!important;}
+#loading .scan-uploading{margin:0 0 12px!important;color:rgba(196,181,253,.92)!important;}
+.scan-metric-fill{transition:width .18s linear!important;}
+
+/* When result/report opens, main nav must be visible again. */
+html:not(.fm-quiz-active) .bottom{display:grid!important;}
+</style>
+<script id="fm-mediapipe-clean-patch-js">
+(function(){
+  function $id(id){ return document.getElementById(id); }
+  function clearCanvas(id){
+    const c=$id(id); if(!c) return;
+    try{ const ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width||0,c.height||0); }catch(e){}
+  }
+
+  // Kill Apple Vision visual path. It was creating warped contours on WebView/Appetize.
+  window.startAppleVisionScanFX = function(){ clearCanvas('loadingCanvas'); return false; };
+  window.stopAppleVisionScanFX = function(){ clearCanvas('loadingCanvas'); };
+
+  let mpFxRaf = null;
+  function stopMpFx(){ if(mpFxRaf){ cancelAnimationFrame(mpFxRaf); mpFxRaf=null; } clearCanvas('loadingCanvas'); }
+  window.stopMediaPipeScanFX = stopMpFx;
+
+  function project(img, parent, canvas, lm){
+    const ir=img.getBoundingClientRect(), pr=parent.getBoundingClientRect();
+    const w=ir.width, h=ir.height, ox=ir.left-pr.left, oy=ir.top-pr.top;
+    const nW=img.naturalWidth||w, nH=img.naturalHeight||h;
+    const scale=Math.max(w/nW,h/nH), dispW=nW*scale, dispH=nH*scale;
+    const offX=ox+(w-dispW)/2, offY=oy+(h-dispH)/2;
+    return {x:offX+lm.x*dispW,y:offY+lm.y*dispH};
+  }
+  const loops={
+    face:[10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109],
+    jaw:[234,93,132,58,172,136,150,149,176,148,152,377,400,378,379,365,397,288,361,323,454],
+    leftEye:[33,246,161,160,159,158,157,173,133,155,154,153,145,144,163,7],
+    rightEye:[263,466,388,387,386,385,384,398,362,382,381,380,374,373,390,249],
+    lips:[61,185,40,39,37,0,267,269,270,409,291,375,321,405,314,17,84,181,91,146],
+    nose:[168,6,197,195,5,4,1,19,94,2,98,97,326,327]
+  };
+  function drawLine(ctx, pts, close, alpha, width, color){
+    if(!pts || pts.length<2) return;
+    ctx.save(); ctx.globalAlpha=alpha; ctx.lineWidth=width; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle=color; ctx.shadowColor='rgba(196,181,253,.65)'; ctx.shadowBlur=10;
+    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x,pts[i].y); if(close) ctx.closePath(); ctx.stroke(); ctx.restore();
+  }
+  window.animateLandmarkReveal = function(imgId, canvasId, durationMs, lmsOverride){
+    stopMpFx();
+    const img=$id(imgId), canvas=$id(canvasId); const lms=lmsOverride || window.faceLandmarks || (typeof faceLandmarks!=='undefined' ? faceLandmarks : null);
+    if(!img || !canvas || !lms || !lms.length) return false;
+    const parent=canvas.parentElement || img.parentElement;
+    const start=performance.now(), dur=durationMs||1800;
+    function frame(now){
+      if(!document.getElementById('loading')?.classList.contains('active')) { stopMpFx(); return; }
+      const dpr=Math.min(window.devicePixelRatio||1,2); const r=parent.getBoundingClientRect();
+      if(canvas.width!==Math.round(r.width*dpr)||canvas.height!==Math.round(r.height*dpr)){ canvas.width=Math.round(r.width*dpr); canvas.height=Math.round(r.height*dpr); }
+      const ctx=canvas.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,r.width,r.height);
+      const t=Math.min(1,(now-start)/dur); const ease=1-Math.pow(1-t,3); const pulse=.72+.18*Math.sin(now/180);
+      const mapIdx=arr=>arr.map(i=>lms[i]).filter(Boolean).map(lm=>project(img,parent,canvas,lm));
+      // soft hologram glow behind face, not a sweep line
+      const g=ctx.createRadialGradient(r.width/2,r.height/2,18,r.width/2,r.height/2,r.width*.48);
+      g.addColorStop(0,'rgba(196,181,253,.20)'); g.addColorStop(1,'rgba(232,121,249,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,r.width,r.height);
+      // Progressive reveal: contour first, then jaw, then features.
+      const cutoff=(pts, mul=1)=>pts.slice(0, Math.max(2, Math.floor(pts.length*Math.min(1,ease*mul))));
+      drawLine(ctx, cutoff(mapIdx(loops.face),1.15), true, .45*pulse, 1.25, 'rgba(221,214,254,.86)');
+      drawLine(ctx, cutoff(mapIdx(loops.jaw),1.25), false, .75*pulse, 2.8, 'rgba(232,121,249,.88)');
+      ['leftEye','rightEye','lips','nose'].forEach((k,idx)=>drawLine(ctx, cutoff(mapIdx(loops[k]), 1.55-idx*.08), k!=='nose', .55*pulse, 1.35, 'rgba(196,181,253,.86)'));
+      // Sparse premium nodes, only on loading screen.
+      const sample=[10,33,263,61,291,1,152,234,454,168,197,5,4,0,17,93,323,145,374];
+      ctx.save(); ctx.shadowColor='rgba(255,255,255,.8)'; ctx.shadowBlur=8;
+      const n=Math.floor(sample.length*Math.min(1,ease*1.4));
+      for(let i=0;i<n;i++){ const lm=lms[sample[i]]; if(!lm) continue; const p=project(img,parent,canvas,lm); ctx.fillStyle=i%3?'rgba(196,181,253,.88)':'rgba(255,255,255,.95)'; ctx.beginPath(); ctx.arc(p.x,p.y,1.45+(i%4)*.18,0,Math.PI*2); ctx.fill(); }
+      ctx.restore();
+      if(t<1 || document.getElementById('loading')?.classList.contains('active')) mpFxRaf=requestAnimationFrame(frame);
+    }
+    mpFxRaf=requestAnimationFrame(frame);
+    return true;
+  };
+
+  // Preview build: in Appetize, plan tap unlocks locally and resumes the pending scan.
+  window.quizCheckout = async function(){
+    try{ window.premium=true; }catch(e){}
+    try{ localStorage.setItem('FACEMAX_QUIZ_UNLOCKED','1'); localStorage.setItem('FACEMAX_PREVIEW_UNLOCK','1'); }catch(e){}
+    try{ document.body.classList.add('is-premium'); }catch(e){}
+    try{ if(typeof showToast==='function') showToast('Premium activated'); }catch(e){}
+    setTimeout(function(){
+      try{
+        document.documentElement.classList.remove('fm-quiz-active','fm-fixed-screen');
+        if(typeof quizResumePendingScan==='function') { if(quizResumePendingScan()) return; }
+        if(window.onbState && onbState.pendingScan && typeof window.startScan==='function'){ onbState.pendingScan=false; window.startScan(); }
+      }catch(e){ console.warn(e); }
+    },140);
+  };
+  window.quizPlanCheckout=function(plan){ try{ if(typeof quizSelectPlan==='function') quizSelectPlan(plan); }catch(e){} setTimeout(()=>window.quizCheckout(),70); };
+
+  // Keep chrome in normal app screens, especially the result screen.
+  const oldOpen=window.openScreen;
+  if(typeof oldOpen==='function'){
+    window.openScreen=function(id){
+      if(['home','upload','loading','result','report','daily','profile','tool','foodscan','compare','gate'].includes(id)) document.documentElement.classList.remove('fm-quiz-active','fm-fixed-screen');
+      oldOpen(id);
+      if(['result','report','home','daily','profile','upload'].includes(id)) document.documentElement.classList.remove('fm-quiz-active','fm-fixed-screen');
+      if(id!=='loading') stopMpFx();
+    };
+  }
+
+  // Loading bars: all bars and percentages move together; no delayed/floating counter.
+  window.startScanBars = function(){
+    const ids=[['jawline','loadBarJawline','loadPctJawline'],['cheekbones','loadBarCheekbones','loadPctCheekbones'],['eyes','loadBarEyes','loadPctEyes'],['lips','loadBarLips','loadPctLips'],['nose','loadBarNose','loadPctNose'],['skin','loadBarSkin','loadPctSkin']];
+    if(window._fmScanBarsRAF) cancelAnimationFrame(window._fmScanBarsRAF);
+    const st={t0:performance.now(),cur:0,ids,target:null}; window._fmScanBarsState=st;
+    const upload=$id('scanUploading'); if(upload) upload.textContent='Running AI face analysis…';
+    function color(v){ if(v>=75)return'linear-gradient(90deg,#4ADE80,#22C55E)'; if(v>=60)return'linear-gradient(90deg,#A3E635,#4ADE80)'; if(v>=45)return'linear-gradient(90deg,#FBBF24,#A3E635)'; if(v>=30)return'linear-gradient(90deg,#FB923C,#FBBF24)'; return'linear-gradient(90deg,#EF4444,#FB923C)'; }
+    function frame(){
+      const s=window._fmScanBarsState; if(!s) return;
+      const goal=s.target==null?84:s.target; s.cur += (goal-s.cur)*(s.target==null?.018:.18); if(s.target!=null && Math.abs(goal-s.cur)<.5) s.cur=goal;
+      s.ids.forEach((row,i)=>{ const v=Math.max(0, Math.min(100, s.cur - i*.6)); const fill=$id(row[1]), pct=$id(row[2]); if(fill){fill.style.width=v.toFixed(1)+'%'; fill.style.background=color(v);} if(pct) pct.textContent=Math.round(v)+'%'; });
+      window._fmScanBarsRAF=requestAnimationFrame(frame);
+    }
+    st.ids.forEach(row=>{ const f=$id(row[1]), p=$id(row[2]); if(f){f.style.width='0%';f.style.background='';} if(p)p.textContent='0%'; });
+    frame();
+  };
+  window.finishScanBars = function(values, cb){
+    const vals=values||{}; const nums=[vals.jawline,vals.cheekbones,vals.eyes,vals.lips,vals.nose,vals.skin].map(v=>Number(v)||80); const avg=nums.reduce((a,b)=>a+b,0)/nums.length;
+    if(window._fmScanBarsState) window._fmScanBarsState.target=avg;
+    setTimeout(()=>{ if(window._fmScanBarsRAF) cancelAnimationFrame(window._fmScanBarsRAF); window._fmScanBarsRAF=null; window._fmScanBarsState=null; if(cb) cb(); }, 900);
+  };
+})();
+</script>
+
 
 <svg width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><defs>
 <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4ADE80"/><stop offset="50%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#EF4444"/></linearGradient>
