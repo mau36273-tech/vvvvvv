@@ -4,8 +4,8 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="build-version" content="v-mediapipe-clean-paywall-20260602">
-  <!-- BUILD: v-mediapipe-clean-paywall-20260602 -->
+  <meta name="build-version" content="v-glowup-flow-polish-20260602">
+  <!-- BUILD: v-glowup-flow-polish-20260602 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#100A14">
@@ -1143,31 +1143,77 @@ html.fm-native .qr-ring-num{font-feature-settings:'ss01','tnum','cv11';letter-sp
 }
 
 
-/* === v-flow-capture-paywall-polish: mobile funnel + premium scan polish === */
-html.fm-native.fm-quiz-active .screen.active,
-html.fm-quiz-active #quizAnalyze.screen.active,
-html.fm-quiz-active #quizResult.screen.active,
-html.fm-quiz-active #quizPaywall.screen.active{height:100dvh;max-height:100dvh;overflow:hidden}
-html.fm-quiz-active #quiz .quiz-shell{height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 22px);max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 22px)}
-html.fm-quiz-active #quiz .quiz-body{height:100%;min-height:0;overflow:hidden;display:flex;flex-direction:column}
-html.fm-quiz-active #quiz .quiz-options{overflow-y:auto;max-height:none;padding:1px 2px 8px;margin-bottom:8px;min-height:0;flex:1 1 auto}
-html.fm-quiz-active #quiz .quiz-cta{position:sticky;bottom:0;margin-top:0;padding:12px 0 max(6px,env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,rgba(16,10,20,0),rgba(16,10,20,.94) 28%,var(--bg) 100%)}
-.quiz-sub{color:rgba(255,255,255,.82)!important}.quiz-sub b{color:#fff!important}.quiz-option-text span{color:rgba(255,255,255,.70)!important}
-html.fm-fixed-screen,html.fm-fixed-screen body{height:100dvh!important;max-height:100dvh!important;overflow:hidden!important}
-html.fm-fixed-screen .app{height:100dvh!important;max-height:100dvh!important;min-height:100dvh!important;overflow:hidden!important;padding-top:calc(env(safe-area-inset-top,0px) + 8px)!important;padding-bottom:max(10px,env(safe-area-inset-bottom,0px))!important}
-html.fm-fixed-screen #genderSelect.screen.active,html.fm-fixed-screen #capture.screen.active{display:flex!important;flex-direction:column;height:100%!important;max-height:100%!important;min-height:0!important;overflow:hidden!important;padding-top:0!important}
-html.fm-fixed-screen #genderSelect .quiz-shell,html.fm-fixed-screen #capture .quiz-shell{height:100%!important;max-height:100%!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
-html.fm-fixed-screen .onb-head{flex:0 0 auto;margin:2px 0 10px}.gender-cards{overflow:hidden!important}.onb-foot{flex:0 0 auto;padding-top:12px;margin-top:auto;padding-bottom:max(0px,env(safe-area-inset-bottom,0px))}
-html.fm-fixed-screen .cap-stage{flex:1 1 auto;min-height:0;justify-content:center;gap:10px}.cap-oval{height:clamp(170px,36dvh,280px)}
-html.fm-native .bottom{bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;transform:translateX(-50%) translateY(8px)}
-#quizPaywall .quiz-shell{height:100dvh;max-height:100dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:max(18px,env(safe-area-inset-bottom,0px))}
-#quizPaywall.fm-after-capture .qp-hero{margin-top:0}#quizPaywall.fm-after-capture #qpSkipBtn{display:none}.qp-plan{cursor:pointer}
-#loading .scan-photo{box-shadow:0 0 0 1px rgba(196,181,253,.18),0 0 42px rgba(167,139,250,.22),0 22px 70px rgba(0,0,0,.55)}
-#loading .scan-photo::after{content:"";position:absolute;inset:-2px;border-radius:50%;background:conic-gradient(from 180deg,transparent,rgba(196,181,253,.85),rgba(232,121,249,.45),transparent 62%);mask:radial-gradient(circle,transparent 66%,#000 67%);-webkit-mask:radial-gradient(circle,transparent 66%,#000 67%);animation:premiumScanSpin 2.2s linear infinite;pointer-events:none}
-@keyframes premiumScanSpin{to{transform:rotate(360deg)}}
-#loading .scan-beam{height:28px!important;background:linear-gradient(to bottom,transparent,rgba(255,255,255,.04),rgba(196,181,253,.76),rgba(232,121,249,.30),transparent)!important;box-shadow:0 0 38px rgba(196,181,253,.52)!important;animation:loadScanBeamPremium 2.45s cubic-bezier(.45,0,.15,1) infinite!important}
-@keyframes loadScanBeamPremium{0%{transform:translateY(-36px);opacity:0}13%{opacity:.9}50%{opacity:1}87%{opacity:.9}100%{transform:translateY(248px);opacity:0}}
-@media (max-height:740px){.quiz-option{height:clamp(49px,7.2vh,61px)}.quiz-title{font-size:clamp(22px,5.7vw,28px)}.quiz-sub{font-size:13.5px}.cap-oval{height:clamp(156px,34dvh,240px)}}
+/* ===================== FINAL POLISH PATCH: quiz/paywall/glow-up flow ===================== */
+/* Quiz: whole screen stays fixed; only options can scroll; CTA is safe-area pinned. */
+#quiz.screen.active{height:100dvh!important;overflow:hidden!important;padding:0!important}
+#quiz .quiz-shell{height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 22px)!important;overflow:hidden!important;display:flex!important}
+#quiz .quiz-body{min-height:0!important;overflow:hidden!important;display:flex!important;color:#fff!important}
+#quiz .quiz-options,#quiz .quiz-pills{overflow-y:auto!important;min-height:0!important;-webkit-overflow-scrolling:touch!important;padding-bottom:8px!important}
+#quiz .quiz-cta{position:sticky!important;bottom:0!important;margin-top:auto!important;padding:12px 0 calc(8px + env(safe-area-inset-bottom,0px))!important;background:linear-gradient(180deg,rgba(16,10,20,0),var(--bg) 28%)!important;z-index:8!important}
+#quiz .quiz-title,#quiz .quiz-sub,#quiz .quiz-option,#quiz .quiz-option-text b,#quiz .quiz-pill{color:#fff!important}
+#quiz .quiz-option-text span,#quiz .quiz-sub{color:rgba(255,255,255,.72)!important}
+
+/* Quiz analyze: DePuff-style progress circles instead of a single spinner. */
+#quizAnalyze .quiz-shell{height:100dvh!important;min-height:0!important;justify-content:center!important;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))!important;overflow:hidden!important}
+.qa-ring{width:178px!important;height:178px!important;margin-bottom:28px!important;background:radial-gradient(circle at 50% 50%,rgba(167,139,250,.18),transparent 57%)!important;border:1px solid rgba(196,181,253,.20)!important;box-shadow:0 0 45px rgba(167,139,250,.20),inset 0 0 30px rgba(255,255,255,.04)!important;animation:none!important;display:grid!important;place-items:center!important}
+.qa-ring::before,.qa-ring::after{content:""!important;position:absolute!important;border-radius:50%!important;background:transparent!important;box-shadow:none!important;animation:qaCirclePulse 1.65s ease-in-out infinite!important}
+.qa-ring::before{inset:18px!important;border:2px solid rgba(196,181,253,.42)!important;border-top-color:#C4B5FD!important}
+.qa-ring::after{inset:46px!important;border:2px solid rgba(232,121,249,.36)!important;border-bottom-color:#E879F9!important;animation-delay:.28s!important}
+.qa-ring{--dot:rgba(255,255,255,.88)}
+.qa-ring > *{display:none!important}
+@keyframes qaCirclePulse{0%,100%{transform:scale(.96);opacity:.55}50%{transform:scale(1.04);opacity:1}}
+
+/* Readiness result: remove close X, allow scrolling, keep CTA fixed with safe-area. */
+#quizResult .qr-close{display:none!important}
+#quizResult.screen.active{height:100dvh!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;padding-bottom:0!important}
+#quizResult .quiz-shell{min-height:100dvh!important;padding-bottom:136px!important;overflow:visible!important}
+#quizResult .qr-footer{padding:22px 18px calc(18px + env(safe-area-inset-bottom,0px))!important;background:linear-gradient(180deg,rgba(16,10,20,0) 0%,var(--bg) 38%)!important}
+
+/* Gender/photo capture: true full viewport and no title overlap from back arrow. */
+html.fm-fixed-screen .app{height:100dvh!important;min-height:100dvh!important;overflow:hidden!important;padding-top:calc(env(safe-area-inset-top,0px) + 8px)!important;padding-bottom:max(10px,env(safe-area-inset-bottom,0px))!important}
+#genderSelect.screen.active,#capture.screen.active{height:100%!important;overflow:hidden!important}
+#genderSelect .quiz-shell,#capture .quiz-shell{height:100%!important;min-height:0!important;overflow:hidden!important;padding-top:2px!important}
+.onb-back{top:calc(env(safe-area-inset-top,0px) + 6px)!important;left:10px!important;background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.08)!important;z-index:12!important}
+.onb-head{padding-left:44px!important;padding-right:44px!important;margin-top:0!important;flex-shrink:0!important}
+.onb-foot{position:sticky!important;bottom:0!important;padding:14px 0 calc(8px + env(safe-area-inset-bottom,0px))!important;background:linear-gradient(180deg,rgba(16,10,20,0),var(--bg) 30%)!important;z-index:8!important}
+.gender-cards,.cap-stage{min-height:0!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
+.gender-card{max-height:calc((100dvh - 250px)/2)!important;min-height:142px!important;width:min(100%,330px)!important;aspect-ratio:1.55/1!important;flex:1 1 0!important}
+.cap-oval{height:clamp(190px,42dvh,315px)!important}
+
+/* Paywall: after both photos only; three subscription buttons are the only actions. */
+#quizPaywall.screen.active{height:100dvh!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
+#quizPaywall .quiz-shell{min-height:100dvh!important;padding:8px 0 calc(18px + env(safe-area-inset-bottom,0px))!important;justify-content:center!important}
+#quizPaywall .quiz-top,#quizPaywall .qp-insights,#quizPaywall #quizPayBtn,#quizPaywall .qp-pay-disclosure,#quizPaywall .qp-trust,#quizPaywall .qp-free-cta,#quizPaywall .qp-footer,#quizPaywall .qp-urgency{display:none!important}
+#quizPaywall .qp-hero{margin:0 0 18px!important}
+#quizPaywall .qp-emoji{font-size:46px!important;margin-bottom:8px!important}
+#quizPaywall .qp-title{font-size:25px!important;margin-bottom:8px!important}
+#quizPaywall .qp-sub{font-size:13.5px!important;margin-bottom:18px!important;color:rgba(255,255,255,.72)!important}
+#quizPaywall .qp-plans{gap:12px!important;margin:0!important}
+#quizPaywall .qp-plan{min-height:72px!important;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.028))!important}
+#quizPaywall .qp-plan:after{content:"Tap to start";font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(196,181,253,.86);position:absolute;right:16px;bottom:8px}
+
+/* Scan animation: no Apple Vision overlay, no cheap grid or stripe; only soft points/mesh canvas on loading. */
+.scan-grid,.scan-beam{display:none!important}
+#loading.screen.active{height:calc(100dvh - 104px - env(safe-area-inset-bottom,0px))!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;padding-bottom:18px!important}
+#loading .scan-photo{box-shadow:0 0 0 1px rgba(196,181,253,.20),0 0 48px rgba(167,139,250,.22),inset 0 0 50px rgba(167,139,250,.08)!important}
+#loading .scan-photo:after{content:"";position:absolute;inset:-18px;border-radius:50%;background:radial-gradient(circle,rgba(167,139,250,.18),transparent 64%);pointer-events:none;animation:orbBreath 2.4s ease-in-out infinite}
+#result .face-canvas,#report .face-canvas,#tool .face-canvas{display:none!important}
+
+/* Bottom nav: anchored at bottom with safe-area padding; Glow Up plan replaces separate plan tabs. */
+.bottom-v2{bottom:0!important;padding-bottom:calc(9px + env(safe-area-inset-bottom,0px))!important;transform:none!important}
+html.fm-native .bottom-v2{bottom:0!important}
+.tools-grid.compact .tool:nth-child(3),.tools-grid.compact .tool:nth-child(4){display:none!important}
+.tools-grid.compact .tool.featured{grid-column:span 2!important}
+
+/* Glow Up Plan short-card system. */
+.glow-plan-block{display:grid;gap:10px;margin:2px 0 16px}
+.glow-card{background:linear-gradient(180deg,rgba(167,139,250,.075),rgba(255,255,255,.03));border:1px solid rgba(167,139,250,.16);border-radius:18px;padding:14px 14px}
+.glow-card h3{margin:0 0 9px;color:#fff;font-size:12px;letter-spacing:.10em;text-transform:uppercase}
+.glow-focus{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.glow-focus b{font-size:17px;letter-spacing:-.02em;line-height:1.2}
+.glow-score{display:inline-flex;align-items:center;justify-content:center;width:50px;height:50px;border-radius:50%;background:rgba(167,139,250,.14);border:1px solid rgba(196,181,253,.28);font-weight:900;color:#fff;flex-shrink:0}
+.glow-checks{display:grid;gap:8px}.glow-check{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:650;color:#fff}.glow-check i{width:18px;height:18px;border-radius:50%;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.35);display:grid;place-items:center;color:#86efac;font-style:normal;font-size:11px}.glow-muted{font-size:12.5px;color:rgba(255,255,255,.62);line-height:1.45;margin-top:3px}.glow-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.glow-mini{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:15px;padding:12px}.glow-mini b{display:flex;justify-content:space-between;gap:8px;font-size:13.5px}.glow-mini span{display:block;margin-top:5px;font-size:12px;color:rgba(255,255,255,.62);line-height:1.35}.glow-road{display:grid;gap:7px}.glow-day{display:flex;align-items:center;gap:9px;font-size:12.5px;color:rgba(255,255,255,.82)}.glow-day b{width:42px;color:#C4B5FD}.glow-progress{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.glow-p{border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);padding:10px;text-align:center}.glow-p b{display:block;font-size:16px}.glow-p span{font-size:10.5px;color:rgba(255,255,255,.55);text-transform:uppercase;font-weight:700;letter-spacing:.06em}
+
 </style>
 <style>
 /* ===================== ONBOARDING REWORK (gender select + dual capture) ===================== */
@@ -1524,37 +1570,37 @@ html.fm-fixed-screen .screen.active { height:100%; }
         <span class="qp-sparkle"></span><span class="qp-sparkle"></span><span class="qp-sparkle"></span><span class="qp-sparkle"></span>
         <div class="qp-emoji">✨</div>
       </div>
-      <div class="qp-badge">Your analysis is ready</div>
-      <h1 class="qp-title">Unlock your <b>aesthetic potential</b></h1>
-      <p class="qp-sub" id="qpSub">Based on your profile, we built a personalized AI analysis tailored to <b id="qpGoals">your goals</b>.</p>
+      <div class="qp-badge">Photos ready</div>
+      <h1 class="qp-title">Start your <b>AI face scan</b></h1>
+      <p class="qp-sub" id="qpSub">Choose a plan to run your scan. Your photos are analyzed only after this step.</p>
     </div>
 
     <div class="qp-insights" id="qpInsights"><!-- filled by JS --></div>
 
     <div class="qp-plans" id="qpPlans">
-      <button class="qp-plan" data-plan="weekly" onclick="quizPlanCheckout('weekly')">
+      <button class="qp-plan" data-plan="weekly" onclick="quizSelectAndCheckout('weekly')">
         <span class="qp-plan-radio"></span>
         <span class="qp-plan-info">
           <span class="qp-plan-name">1 week</span>
-          <span class="qp-plan-meta">Try everything · cancel anytime</span>
+          <span class="qp-plan-meta">Weekly access</span>
         </span>
         <span class="qp-plan-price"><b>$2.90</b></span>
       </button>
-      <button class="qp-plan" data-plan="monthly" onclick="quizPlanCheckout('monthly')">
+      <button class="qp-plan" data-plan="monthly" onclick="quizSelectAndCheckout('monthly')">
         <span class="qp-plan-tag">Most popular</span>
         <span class="qp-plan-radio"></span>
         <span class="qp-plan-info">
           <span class="qp-plan-name">1 month</span>
-          <span class="qp-plan-meta">Full access · all AI tools · key insights</span>
+          <span class="qp-plan-meta">Monthly access</span>
         </span>
         <span class="qp-plan-price"><b>$9.90</b></span>
       </button>
-      <button class="qp-plan" data-plan="yearly" onclick="quizPlanCheckout('yearly')">
+      <button class="qp-plan" data-plan="yearly" onclick="quizSelectAndCheckout('yearly')">
         <span class="qp-plan-tag" style="background:linear-gradient(90deg,#fbbf24,#f59e0b)">Best value</span>
         <span class="qp-plan-radio"></span>
         <span class="qp-plan-info">
           <span class="qp-plan-name">1 year</span>
-          <span class="qp-plan-meta">Billed annually · save the most</span>
+          <span class="qp-plan-meta">Best long-term value</span>
         </span>
         <span class="qp-plan-price"><b>$39.90</b></span>
       </button>
@@ -1575,7 +1621,7 @@ html.fm-fixed-screen .screen.active { height:100%; }
       <span class="qp-trust-item"><svg viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></svg>Instant access</span>
     </div>
 
-    <button class="qp-free-cta" id="qpSkipBtn" onclick="quizPaywallClose()">
+    <button class="qp-free-cta" onclick="quizPaywallClose()">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
       <span>Skip for now</span>
     </button>
@@ -1651,12 +1697,12 @@ html.fm-fixed-screen .screen.active { height:100%; }
       </div>
     </div>
 
-    <div class="home-tools-hdr"><h3>AI tools</h3></div>
+    <div class="home-tools-hdr"><h3>Glow-up tools</h3></div>
     <div class="tools-grid compact">
       <div class="tool featured" onclick="openDailyHub()">
         <div class="tool-ico"><svg viewBox="0 0 24 24"><path d="M12 2c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 6-12z"/><path d="m13 3-7 11h6l-1 7 7-11h-6z"/></svg></div>
         <span class="lock-pill"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Pro</span>
-        <b>Daily debloat</b><span>Food scanner · water · routine · exercises · meal plan</span>
+        <b>Glow Up Plan</b><span>Jawline · skin · de-puff · 7-day checklist</span>
       </div>
       <div class="tool" onclick="openFoodScan()">
         <div class="tool-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="4"/><path d="M5 7h3l1.5-2h5L16 7h3v12H5z"/></svg></div>
@@ -2231,9 +2277,9 @@ html.fm-fixed-screen .screen.active { height:100%; }
 <!-- =============================== DAILY HUB =============================== -->
 <section id="daily" class="screen">
   <div class="daily-hero">
-    <span class="hero-eyebrow">Daily care</span>
-    <h2 id="dailyGreeting">Good morning</h2>
-    <p>Tackle facial bloating at the source — food, water, routines, and exercises that move puffiness off your face.</p>
+    <span class="hero-eyebrow">Glow Up Plan</span>
+    <h2 id="dailyGreeting">Today's plan</h2>
+    <p>Short daily cards for jawline definition, skin glow, de-puff, and progress. Scan, plan, repeat.</p>
     <div class="daily-streaks">
       <div class="streak-card">
         <div class="sc-ico"><svg viewBox="0 0 24 24"><path d="M12 2c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 5-10z"/></svg></div>
@@ -2246,7 +2292,9 @@ html.fm-fixed-screen .screen.active { height:100%; }
     </div>
   </div>
 
-  <div class="sec-hdr"><h3>Today</h3></div>
+  <div class="glow-plan-block" id="glowPlanBlock"></div>
+
+  <div class="sec-hdr"><h3>Today's tools</h3></div>
   <div class="daily-grid">
     <div class="daily-tile featured wide" onclick="openFoodScan()">
       <div class="dt-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="4"/><path d="M5 7h3l1.5-2h5L16 7h3v12H5z"/></svg></div>
@@ -2490,7 +2538,7 @@ html.fm-fixed-screen .screen.active { height:100%; }
   </button>
   <button class="nav" data-screen="daily" onclick="openDailyHub()">
     <svg viewBox="0 0 24 24"><path d="M12 2c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 5-10z"/></svg>
-    Daily
+    Glow Up
   </button>
   <div class="nav-scan-spacer" aria-hidden="true"></div>
   <button class="nav" data-screen="history" onclick="openHistoryScreen()">
@@ -2949,8 +2997,7 @@ window.openScreen = function(id){
   const tabId = NAV_TAB_FOR_SCREEN[id];
   if (tabId) setActiveNavTab(tabId);
   window.scrollTo(0, 0);
-  if (id !== "loading") { try { stopAppleVisionScanFX && stopAppleVisionScanFX(); } catch {} }
-  if (["result","report"].includes(id)) {
+  if (["result","report","loading"].includes(id)) {
     setTimeout(drawAllOverlays, 120);
     setTimeout(drawAllOverlays, 600);
   }
@@ -3817,187 +3864,6 @@ function animateLandmarkReveal(imgId, canvasId, durationMs, lmsOverride){
 }
 window.animateLandmarkReveal = animateLandmarkReveal;
 
-
-
-/* ===== Apple Vision premium scan FX (iOS native, visual only) =====
- * Runs Apple's Vision face-landmark detector through a tiny Capacitor plugin,
- * then draws a high-end local scan overlay. This is intentionally UX-only:
- * the real scoring still comes from MediaPipe validation + Worker AI below. */
-let _appleVisionFxRaf = null;
-let _appleVisionFxRun = 0;
-function stopAppleVisionScanFX(){
-  _appleVisionFxRun++;
-  if (_appleVisionFxRaf) cancelAnimationFrame(_appleVisionFxRaf);
-  _appleVisionFxRaf = null;
-}
-window.stopAppleVisionScanFX = stopAppleVisionScanFX;
-
-function normalizeVisionGroups(res){
-  if (!res || !res.ok || !res.groups) return null;
-  const out = {};
-  Object.keys(res.groups).forEach(k => {
-    const pts = (res.groups[k] || []).map(p => ({ x: Number(p.x), y: Number(p.y) })).filter(p => isFinite(p.x) && isFinite(p.y));
-    if (pts.length) out[k] = pts;
-  });
-  return Object.keys(out).length ? out : null;
-}
-
-function fallbackFaceFXGroups(){
-  const oval=[]; for(let i=0;i<28;i++){const a=(i/(28-1))*Math.PI; oval.push({x:.5+Math.cos(Math.PI+a)*.25,y:.45+Math.sin(Math.PI+a)*.35});}
-  return {
-    faceContour: oval,
-    leftEye: [{x:.34,y:.41},{x:.39,y:.39},{x:.45,y:.41},{x:.39,y:.43}],
-    rightEye: [{x:.55,y:.41},{x:.61,y:.39},{x:.66,y:.41},{x:.61,y:.43}],
-    noseCrest: [{x:.50,y:.42},{x:.50,y:.49},{x:.49,y:.56},{x:.50,y:.61}],
-    nose: [{x:.44,y:.60},{x:.50,y:.63},{x:.56,y:.60}],
-    outerLips: [{x:.40,y:.71},{x:.46,y:.68},{x:.54,y:.68},{x:.60,y:.71},{x:.54,y:.74},{x:.46,y:.74}],
-    medianLine: [{x:.50,y:.31},{x:.50,y:.42},{x:.50,y:.55},{x:.50,y:.78}],
-  };
-}
-
-function projectVisionPoint(img, ox, oy, w, h, pt){
-  const proj = landmarkProjector(img, ox, oy, w, h);
-  return proj(pt);
-}
-
-function drawPremiumVisionFrame(img, canvas, groups, startT, runId){
-  const parentRect = canvas.parentElement.getBoundingClientRect();
-  const imgRect = img.getBoundingClientRect();
-  if (!parentRect.width || !imgRect.width) return false;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const cw = Math.round(parentRect.width * dpr), ch = Math.round(parentRect.height * dpr);
-  if (canvas.width !== cw || canvas.height !== ch) {
-    canvas.width = cw; canvas.height = ch;
-    canvas.style.width = parentRect.width + "px";
-    canvas.style.height = parentRect.height + "px";
-  }
-  const ctx = canvas.getContext("2d");
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.clearRect(0,0,parentRect.width,parentRect.height);
-  const ox = imgRect.left - parentRect.left, oy = imgRect.top - parentRect.top;
-  const w = imgRect.width, h = imgRect.height;
-  const now = performance.now();
-  const t = (now - startT) / 1000;
-  const reveal = Math.min(1, (now - startT) / 1250);
-  const pulse = .65 + Math.sin(t * 3.2) * .18;
-  const toPts = arr => (arr || []).map(p => projectVisionPoint(img, ox, oy, w, h, p));
-  function linePath(pts, close){
-    if (!pts || pts.length < 2) return;
-    const lim = Math.max(2, Math.floor(pts.length * reveal));
-    ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
-    for (let i=1;i<lim;i++) ctx.lineTo(pts[i].x, pts[i].y);
-    if (close && reveal > .96) ctx.closePath();
-  }
-  // Subtle source-photo dim + glass glow
-  ctx.save();
-  ctx.globalAlpha = .10 + .06 * pulse;
-  const grd = ctx.createRadialGradient(parentRect.width/2,parentRect.height/2,10,parentRect.width/2,parentRect.height/2,parentRect.width*.55);
-  grd.addColorStop(0,"rgba(196,181,253,.35)"); grd.addColorStop(1,"rgba(232,121,249,0)");
-  ctx.fillStyle = grd; ctx.fillRect(0,0,parentRect.width,parentRect.height);
-  ctx.restore();
-
-  // Main contours from Apple Vision
-  ctx.save();
-  ctx.lineCap="round"; ctx.lineJoin="round";
-  ctx.shadowColor="rgba(196,181,253,.72)"; ctx.shadowBlur=12;
-  ctx.lineWidth=1.55;
-  ctx.strokeStyle=`rgba(221,214,254,${(.74 + .15*pulse).toFixed(3)})`;
-  ["faceContour","leftEye","rightEye","leftEyebrow","rightEyebrow","nose","noseCrest","outerLips","innerLips","medianLine"].forEach((name)=>{
-    const pts=toPts(groups[name]); if(!pts.length) return;
-    linePath(pts, name==="leftEye"||name==="rightEye"||name==="outerLips"||name==="innerLips");
-    ctx.stroke();
-  });
-  // Jawline / lower contour gets a premium accent
-  const jaw = toPts(groups.faceContour);
-  if (jaw.length > 5) {
-    ctx.lineWidth=3.2; ctx.shadowBlur=18; ctx.strokeStyle=`rgba(232,121,249,${(.44 + .20*pulse).toFixed(3)})`;
-    linePath(jaw.slice(Math.floor(jaw.length*.38)), false); ctx.stroke();
-  }
-  ctx.restore();
-
-  // Landmark particles, progressively revealed
-  const all = Object.values(groups).flat();
-  const n = Math.floor(all.length * reveal);
-  ctx.save(); ctx.shadowColor="rgba(255,255,255,.72)"; ctx.shadowBlur=7;
-  for (let i=0;i<n;i++) {
-    const P = projectVisionPoint(img, ox, oy, w, h, all[i]);
-    const r = 1.25 + ((i % 5) * .10) + pulse*.35;
-    ctx.fillStyle = i % 3 === 0 ? "rgba(255,255,255,.92)" : "rgba(196,181,253,.82)";
-    ctx.beginPath(); ctx.arc(P.x,P.y,r,0,Math.PI*2); ctx.fill();
-  }
-  ctx.restore();
-
-  // Moving Apple-Vision style scanning plane clipped to the photo frame
-  const sweep = ((t * .34) % 1);
-  const y = oy + sweep * h;
-  ctx.save();
-  ctx.beginPath(); ctx.rect(ox,oy,w,h); ctx.clip();
-  const sg = ctx.createLinearGradient(0,y-28,0,y+28);
-  sg.addColorStop(0,"rgba(167,139,250,0)");
-  sg.addColorStop(.45,"rgba(196,181,253,.10)");
-  sg.addColorStop(.50,"rgba(255,255,255,.88)");
-  sg.addColorStop(.55,"rgba(232,121,249,.16)");
-  sg.addColorStop(1,"rgba(167,139,250,0)");
-  ctx.fillStyle=sg; ctx.globalCompositeOperation="screen"; ctx.fillRect(ox,y-34,w,68);
-  ctx.restore();
-
-  // HUD tags are intentionally tiny/premium, not cheap big text
-  const tags = [["Face mesh",.20],["Jawline map",.48],["Skin texture",.76]];
-  ctx.save(); ctx.font="700 10px -apple-system, BlinkMacSystemFont, Inter, sans-serif"; ctx.textBaseline="middle";
-  tags.forEach(([label,pos],i)=>{
-    const tx = ox + 12, ty = oy + h * pos;
-    const a = Math.max(0, Math.min(1, reveal*1.4 - i*.18));
-    ctx.globalAlpha = a * (.70 + .2*pulse);
-    const textW = ctx.measureText(label).width + 20;
-    ctx.fillStyle="rgba(16,10,20,.48)"; ctx.strokeStyle="rgba(196,181,253,.26)"; ctx.lineWidth=1;
-    roundRect(ctx, tx, ty-11, textW, 22, 11); ctx.fill(); ctx.stroke();
-    ctx.fillStyle="rgba(245,243,255,.86)"; ctx.fillText(label, tx+10, ty+.5);
-  });
-  ctx.restore();
-  if (_appleVisionFxRun === runId) _appleVisionFxRaf = requestAnimationFrame(() => drawPremiumVisionFrame(img, canvas, groups, startT, runId));
-  return true;
-}
-
-function roundRect(ctx,x,y,w,h,r){
-  r=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
-}
-
-async function startAppleVisionScanFX(dataUrl, imgId, canvasId){
-  stopAppleVisionScanFX();
-  const runId = _appleVisionFxRun;
-  const img = el(imgId), canvas = el(canvasId);
-  if (!img || !canvas) return;
-  let groups = null;
-  try {
-    if (window.facemax && typeof window.facemax.appleVisionDetect === "function") {
-      const res = await window.facemax.appleVisionDetect(dataUrl);
-      groups = normalizeVisionGroups(res);
-    }
-  } catch (e) { console.warn("Apple Vision FX failed", e); }
-  // Web/Appetize fallback: keep the premium look even if native Vision is missing.
-  if (!groups) groups = fallbackFaceFXGroups();
-  if (_appleVisionFxRun !== runId) return;
-  drawPremiumVisionFrame(img, canvas, groups, performance.now(), runId);
-}
-window.startAppleVisionScanFX = startAppleVisionScanFX;
-
-// Re-enable premium canvas reveal. MediaPipe's 478 points can be used as a
-// fallback overlay, but Apple Vision FX above usually owns the loading canvas.
-function animateLandmarkReveal(imgId, canvasId, durationMs, lmsOverride){
-  if (_appleVisionFxRaf) return;
-  const lms = lmsOverride || faceLandmarks;
-  if (!lms || !lms.length) return;
-  const groups = { faceContour: lms.filter((_,i)=>[10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109].includes(i)) };
-  const img = el(imgId), canvas = el(canvasId);
-  if (!img || !canvas) return;
-  const start = performance.now();
-  stopAppleVisionScanFX();
-  const runId = _appleVisionFxRun;
-  drawPremiumVisionFrame(img, canvas, groups, start, runId);
-  setTimeout(stopAppleVisionScanFX, durationMs || 1400);
-}
-window.animateLandmarkReveal = animateLandmarkReveal;
-
 function applySelectedPhoto(dataUrl){
   selectedImageData = dataUrl;
   el("previewImg").src = selectedImageData;
@@ -4120,7 +3986,6 @@ function stopScanBars(){
   if (_scanBarsRAF) cancelAnimationFrame(_scanBarsRAF);
   _scanBarsRAF = null;
   _scanBarsState = null;
-  try { if (typeof stopAppleVisionScanFX === "function") stopAppleVisionScanFX(); } catch {}
 }
 
 /* Lock the loading bars onto the real per-metric values, hold, then run cb. */
@@ -4195,6 +4060,20 @@ window.startScan = async function(){
   // pending and resumes after a successful purchase (see quizResumePendingScan).
   // No payment => no analysis.
   if (!hasUnlockedAccess()) {
+    // Never show the subscription screen after only one photo. Route legacy
+    // one-photo entry points into the required side-photo step first.
+    if (!selectedSideImageData && window.onbState) {
+      onbState.flow = onbState.flow || "scan";
+      onbState.gender = onbState.gender || (typeof currentGender === "function" ? currentGender() : "");
+      onbState.front = selectedImageData;
+      onbState.side = "";
+      onbState.which = "side";
+      onbState.pendingScan = false;
+      document.documentElement.classList.add("fm-quiz-active");
+      openScreen("capture");
+      try { onbRenderCapture(); } catch {}
+      return;
+    }
     if (window.onbState) onbState.pendingScan = true;
     quizShowPaywall();
     return;
@@ -4210,7 +4089,6 @@ window.startScan = async function(){
     const n = el(id); if (n) n.textContent = "Analyzing";
   });
   openScreen("loading");
-  try { startAppleVisionScanFX(selectedImageData, "loadingImg", "loadingCanvas"); } catch {}
   startScanBars();
   try { if (typeof onbAnimateUpload === "function") onbAnimateUpload(); } catch {}
 
@@ -5489,27 +5367,12 @@ window.payLava = async function(plan){
         return;
       }
       if (res && res.error === "cancelled") return;
-      // Preview/Appetize build: if RevenueCat is not configured yet, let the
-      // selected plan unlock locally so the captured photos can continue into
-      // scan. Once FACEMAX_REVENUECAT_API_KEY is filled with appl_..., this
-      // bypass will no longer run.
-      if (!window.FACEMAX_REVENUECAT_API_KEY) {
-        try { localStorage.setItem("FACEMAX_QUIZ_UNLOCKED", "1"); } catch {}
-        premium = true;
-        try { document.body.classList.toggle("is-premium", true); } catch {}
-        showToast("Preview unlock — running scan", 2200);
-        return;
-      }
-      showToast("Purchase unavailable", 4200);
+      // No simulator/dev bypass here: scans must stay locked until a real
+      // RevenueCat / Apple entitlement is confirmed. Configure the iOS
+      // RevenueCat public SDK key at the bottom of this file before TestFlight.
+      showToast("Purchase unavailable: configure RevenueCat for iOS", 4200);
       return;
     } catch (err) {
-      if (!window.FACEMAX_REVENUECAT_API_KEY) {
-        try { localStorage.setItem("FACEMAX_QUIZ_UNLOCKED", "1"); } catch {}
-        premium = true;
-        try { document.body.classList.toggle("is-premium", true); } catch {}
-        showToast("Preview unlock — running scan", 2200);
-        return;
-      }
       showToast("Purchase error");
       return;
     }
@@ -6860,18 +6723,18 @@ function onbCaptureBack(){
 }
 
 function onbProceedToScan(){
-  // Front + side photos are now captured. Do NOT send the photo to analysis yet.
-  // startScan() will open the 3-plan paywall when there is no unlock, and only
-  // after a successful subscription tap/purchase will quizResumePendingScan()
-  // continue into the AI scan.
-  document.documentElement.classList.add("fm-quiz-active");
+  // Both required photos are now collected. Do not analyze yet: the paywall is
+  // the required gate before any photo leaves the device for AI analysis.
+  document.documentElement.classList.remove("fm-quiz-active");
   onbState.viaCapture = true;
+  onbState.pendingScan = true;
   selectedImageData = onbState.front || selectedImageData;
   selectedSideImageData = onbState.side || "";
   try { if (typeof applySelectedPhoto === "function" && selectedImageData) applySelectedPhoto(selectedImageData); } catch {}
   const li = el("loadingImg"); if (li && selectedImageData) li.src = selectedImageData;
-  if (typeof window.startScan === "function") window.startScan();
+  quizShowPaywall();
 }
+
 // Animated "Uploading your data · NN%" line on the loading screen.
 let _onbUploadTimer = null;
 function onbAnimateUpload(){
@@ -7043,31 +6906,7 @@ function quizFinishToAnalyze(){
   quizHaptic();
   // Set done flag now so a refresh mid-flow doesn't re-start the quiz.
   quizSetDone();
-  // First show the premium-looking result-building screen (circles/checklist),
-  // then reveal the quiz result with the fixed Scan my face CTA. Paywall comes
-  // only after the user uploads both scan photos.
   quizShowAnalyzeThenResult();
-}
-
-function quizShowAnalyzeThenResult(){
-  document.documentElement.classList.add("fm-quiz-active");
-  openScreen("quizAnalyze");
-  const steps = [
-    "Analyzing your quiz answers…",
-    "Matching goals to your profile…",
-    "Calibrating your glow-up routine…",
-    "Preparing your baseline result…"
-  ];
-  const stepEl = el("qaStep");
-  const checks = Array.from(document.querySelectorAll("#qaChecklist .qa-check"));
-  checks.forEach(c => c.classList.remove("done"));
-  steps.forEach((txt, i) => {
-    setTimeout(() => {
-      if (stepEl) stepEl.textContent = txt;
-      if (checks[i]) checks[i].classList.add("done");
-    }, 420 + i * 520);
-  });
-  setTimeout(() => quizShowResult(), 2850);
 }
 
 function quizGoalsLabel(){
@@ -7328,23 +7167,13 @@ function quizShowResult(){
 function quizResultToScan(){
   quizHaptic();
   onbState.flow = "onboarding";
-  onbState.which = "front";
-  onbState.front = "";
-  onbState.side = "";
-  onbState.pendingScan = false;
   onbShowGender();
 }
 window.quizResultToScan = quizResultToScan;
 
 function quizShowPaywall(){
-  document.documentElement.classList.add("fm-quiz-active");
-  const afterCapture = !!(window.onbState && onbState.pendingScan && selectedImageData);
-  const qp = el("quizPaywall"); if (qp) qp.classList.toggle("fm-after-capture", afterCapture);
   openScreen("quizPaywall");
-  const badge = document.querySelector("#quizPaywall .qp-badge"); if (badge) badge.textContent = afterCapture ? "Your face scan is ready" : "Your analysis is ready";
-  const title = document.querySelector("#quizPaywall .qp-title"); if (title) title.innerHTML = afterCapture ? "Unlock your <b>AI face scan</b>" : "Unlock your <b>aesthetic potential</b>";
-  const sub = el("qpSub"); if (sub) sub.innerHTML = afterCapture ? "Your photos are saved locally. Choose a plan to run the AI scan and reveal the full report." : 'Based on your profile, we built a personalized AI analysis tailored to <b id="qpGoals">your goals</b>.';
-  const goalsEl = el("qpGoals"); if (goalsEl) goalsEl.innerHTML = quizGoalsLabel();
+  el("qpGoals").innerHTML = quizGoalsLabel();
   const ins = quizPersonalInsights();
   el("qpInsights").innerHTML = ins.map(i => `<div class="qp-insight"><span class="qp-insight-emoji">${i.e}</span><div class="qp-insight-body"><b>${quizEsc(i.t)}</b><span>${quizEsc(i.d)}</span></div></div>`).join("");
   // Default plan select: monthly (mid-tier)
@@ -7358,13 +7187,6 @@ function quizSelectPlan(plan){
   _quizSelectedPlan = allowed.includes(plan) ? plan : "monthly";
   document.querySelectorAll("#qpPlans .qp-plan").forEach(p => p.classList.toggle("selected", p.dataset.plan === _quizSelectedPlan));
   quizHaptic();
-}
-
-function quizPlanCheckout(plan){
-  quizSelectPlan(plan);
-  // In the photo-scan funnel, tapping a plan is the CTA. This keeps the paywall
-  // feeling native: plan tap → checkout/unlock → resume pending scan.
-  setTimeout(() => quizCheckout(), 90);
 }
 
 async function quizCheckout(){
@@ -7427,7 +7249,6 @@ function quizPaywallClose(){
 window.quizStart = quizStart;
 window.quizGoTo = quizGoTo;
 window.quizFinishToAnalyze = quizFinishToAnalyze;
-window.quizShowAnalyzeThenResult = quizShowAnalyzeThenResult;
 window.quizShowResult = quizShowResult;
 window.quizShowPaywall = quizShowPaywall;
 window.quizState = quizState;
@@ -7566,184 +7387,6 @@ document.addEventListener("visibilitychange", () => {
   window.FACEMAX_REVENUECAT_API_KEY = "";
 </script>
 <script src="js/native-bridge.js"></script>
-
-<style id="fm-mediapipe-clean-patch">
-/* === CLEAN PATCH: MediaPipe-only scan FX + compact paywall + fixed screens === */
-html.fm-quiz-active #quizResult.screen.active{height:100dvh!important;max-height:100dvh!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))!important;}
-#quizResult .quiz-shell{min-height:100%;height:auto!important;overflow:visible!important;padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important;}
-#quizResult .qr-close{display:none!important;}
-#quizResult .qr-footer{position:sticky!important;bottom:0!important;z-index:30!important;padding:14px 0 max(12px,env(safe-area-inset-bottom,0px))!important;background:linear-gradient(180deg,rgba(16,10,20,0),rgba(16,10,20,.94) 34%,#100A14 100%)!important;}
-#quizResult .btn-scanface{height:58px!important;font-size:16px!important;border-radius:16px!important;}
-
-/* Gender back arrow must not sit on the headline/subtitle */
-#genderSelect .onb-back{top:calc(env(safe-area-inset-top,0px) + 6px)!important;left:14px!important;width:36px!important;height:36px!important;font-size:28px!important;z-index:20!important;}
-#genderSelect .onb-head{padding-top:34px!important;margin-bottom:10px!important;}
-#genderSelect .onb-title{font-size:28px!important;line-height:1.08!important;}
-#genderSelect .onb-sub{font-size:14px!important;line-height:1.35!important;max-width:300px!important;}
-
-/* Capture/gender full-screen stability */
-html.fm-fixed-screen #genderSelect.screen.active,
-html.fm-fixed-screen #capture.screen.active{height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;}
-html.fm-fixed-screen #genderSelect .quiz-shell,
-html.fm-fixed-screen #capture .quiz-shell{height:100%!important;max-height:100%!important;overflow:hidden!important;}
-html.fm-fixed-screen #capture .quiz-top{margin-bottom:10px!important;}
-html.fm-fixed-screen #capture .onb-head{margin-bottom:8px!important;}
-html.fm-fixed-screen #capture .onb-title{font-size:26px!important;line-height:1.08!important;}
-html.fm-fixed-screen #capture .onb-sub{font-size:13px!important;line-height:1.35!important;}
-html.fm-fixed-screen #capture .cap-stage{min-height:0!important;flex:1 1 auto!important;justify-content:center!important;}
-html.fm-fixed-screen #capture .onb-foot{flex:0 0 auto!important;margin-top:auto!important;padding-top:10px!important;}
-
-/* Paywall after photos: only three subscription choices, no extra copy/skip/buy strip. */
-#quizPaywall.fm-after-capture .qp-hero,
-#quizPaywall.fm-after-capture #qpInsights,
-#quizPaywall.fm-after-capture .qp-trust,
-#quizPaywall.fm-after-capture .qp-footer,
-#quizPaywall.fm-after-capture .qp-pay-disclosure,
-#quizPaywall.fm-after-capture #qpSkipBtn,
-#quizPaywall.fm-after-capture #quizPayBtn,
-#quizPaywall.fm-after-capture .qp-restore,
-#quizPaywall.fm-after-capture .qp-urgency{display:none!important;}
-#quizPaywall.fm-after-capture .quiz-shell{height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;padding:calc(env(safe-area-inset-top,0px) + 28px) 6px max(22px,env(safe-area-inset-bottom,0px))!important;display:flex!important;flex-direction:column!important;justify-content:center!important;}
-#quizPaywall.fm-after-capture #qpPlans{display:flex!important;flex-direction:column!important;gap:14px!important;margin:0!important;}
-#quizPaywall.fm-after-capture .qp-plan{min-height:88px!important;padding:18px 18px!important;border-radius:18px!important;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.03))!important;}
-#quizPaywall.fm-after-capture .qp-plan.selected{box-shadow:0 0 0 2px rgba(167,139,250,.9),0 18px 44px rgba(167,139,250,.28)!important;}
-#quizPaywall.fm-after-capture .qp-plan-price b{font-size:20px!important;}
-#quizPaywall.fm-after-capture .qp-plan-main b{font-size:16px!important;}
-#quizPaywall.fm-after-capture .qp-plan-main span{font-size:12px!important;color:rgba(255,255,255,.66)!important;}
-
-/* Loading FX: no cheap sweep line. MediaPipe mesh appears only on this screen. */
-#loading .scan-beam{display:none!important;animation:none!important;opacity:0!important;}
-#loading .scan-photo::after{display:none!important;}
-#loading .face-canvas{display:block!important;opacity:1!important;mix-blend-mode:screen;}
-#result canvas.face-canvas,#result #resultCanvas,#tool #toolCanvas{display:none!important;}
-#loading .scan-photo{box-shadow:0 0 0 1px rgba(196,181,253,.20),0 0 55px rgba(167,139,250,.24),0 22px 70px rgba(0,0,0,.55)!important;}
-#loading .scan-uploading{margin:0 0 12px!important;color:rgba(196,181,253,.92)!important;}
-.scan-metric-fill{transition:width .18s linear!important;}
-
-/* When result/report opens, main nav must be visible again. */
-html:not(.fm-quiz-active) .bottom{display:grid!important;}
-</style>
-<script id="fm-mediapipe-clean-patch-js">
-(function(){
-  function $id(id){ return document.getElementById(id); }
-  function clearCanvas(id){
-    const c=$id(id); if(!c) return;
-    try{ const ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width||0,c.height||0); }catch(e){}
-  }
-
-  // Kill Apple Vision visual path. It was creating warped contours on WebView/Appetize.
-  window.startAppleVisionScanFX = function(){ clearCanvas('loadingCanvas'); return false; };
-  window.stopAppleVisionScanFX = function(){ clearCanvas('loadingCanvas'); };
-
-  let mpFxRaf = null;
-  function stopMpFx(){ if(mpFxRaf){ cancelAnimationFrame(mpFxRaf); mpFxRaf=null; } clearCanvas('loadingCanvas'); }
-  window.stopMediaPipeScanFX = stopMpFx;
-
-  function project(img, parent, canvas, lm){
-    const ir=img.getBoundingClientRect(), pr=parent.getBoundingClientRect();
-    const w=ir.width, h=ir.height, ox=ir.left-pr.left, oy=ir.top-pr.top;
-    const nW=img.naturalWidth||w, nH=img.naturalHeight||h;
-    const scale=Math.max(w/nW,h/nH), dispW=nW*scale, dispH=nH*scale;
-    const offX=ox+(w-dispW)/2, offY=oy+(h-dispH)/2;
-    return {x:offX+lm.x*dispW,y:offY+lm.y*dispH};
-  }
-  const loops={
-    face:[10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109],
-    jaw:[234,93,132,58,172,136,150,149,176,148,152,377,400,378,379,365,397,288,361,323,454],
-    leftEye:[33,246,161,160,159,158,157,173,133,155,154,153,145,144,163,7],
-    rightEye:[263,466,388,387,386,385,384,398,362,382,381,380,374,373,390,249],
-    lips:[61,185,40,39,37,0,267,269,270,409,291,375,321,405,314,17,84,181,91,146],
-    nose:[168,6,197,195,5,4,1,19,94,2,98,97,326,327]
-  };
-  function drawLine(ctx, pts, close, alpha, width, color){
-    if(!pts || pts.length<2) return;
-    ctx.save(); ctx.globalAlpha=alpha; ctx.lineWidth=width; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle=color; ctx.shadowColor='rgba(196,181,253,.65)'; ctx.shadowBlur=10;
-    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x,pts[i].y); if(close) ctx.closePath(); ctx.stroke(); ctx.restore();
-  }
-  window.animateLandmarkReveal = function(imgId, canvasId, durationMs, lmsOverride){
-    stopMpFx();
-    const img=$id(imgId), canvas=$id(canvasId); const lms=lmsOverride || window.faceLandmarks || (typeof faceLandmarks!=='undefined' ? faceLandmarks : null);
-    if(!img || !canvas || !lms || !lms.length) return false;
-    const parent=canvas.parentElement || img.parentElement;
-    const start=performance.now(), dur=durationMs||1800;
-    function frame(now){
-      if(!document.getElementById('loading')?.classList.contains('active')) { stopMpFx(); return; }
-      const dpr=Math.min(window.devicePixelRatio||1,2); const r=parent.getBoundingClientRect();
-      if(canvas.width!==Math.round(r.width*dpr)||canvas.height!==Math.round(r.height*dpr)){ canvas.width=Math.round(r.width*dpr); canvas.height=Math.round(r.height*dpr); }
-      const ctx=canvas.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,r.width,r.height);
-      const t=Math.min(1,(now-start)/dur); const ease=1-Math.pow(1-t,3); const pulse=.72+.18*Math.sin(now/180);
-      const mapIdx=arr=>arr.map(i=>lms[i]).filter(Boolean).map(lm=>project(img,parent,canvas,lm));
-      // soft hologram glow behind face, not a sweep line
-      const g=ctx.createRadialGradient(r.width/2,r.height/2,18,r.width/2,r.height/2,r.width*.48);
-      g.addColorStop(0,'rgba(196,181,253,.20)'); g.addColorStop(1,'rgba(232,121,249,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,r.width,r.height);
-      // Progressive reveal: contour first, then jaw, then features.
-      const cutoff=(pts, mul=1)=>pts.slice(0, Math.max(2, Math.floor(pts.length*Math.min(1,ease*mul))));
-      drawLine(ctx, cutoff(mapIdx(loops.face),1.15), true, .45*pulse, 1.25, 'rgba(221,214,254,.86)');
-      drawLine(ctx, cutoff(mapIdx(loops.jaw),1.25), false, .75*pulse, 2.8, 'rgba(232,121,249,.88)');
-      ['leftEye','rightEye','lips','nose'].forEach((k,idx)=>drawLine(ctx, cutoff(mapIdx(loops[k]), 1.55-idx*.08), k!=='nose', .55*pulse, 1.35, 'rgba(196,181,253,.86)'));
-      // Sparse premium nodes, only on loading screen.
-      const sample=[10,33,263,61,291,1,152,234,454,168,197,5,4,0,17,93,323,145,374];
-      ctx.save(); ctx.shadowColor='rgba(255,255,255,.8)'; ctx.shadowBlur=8;
-      const n=Math.floor(sample.length*Math.min(1,ease*1.4));
-      for(let i=0;i<n;i++){ const lm=lms[sample[i]]; if(!lm) continue; const p=project(img,parent,canvas,lm); ctx.fillStyle=i%3?'rgba(196,181,253,.88)':'rgba(255,255,255,.95)'; ctx.beginPath(); ctx.arc(p.x,p.y,1.45+(i%4)*.18,0,Math.PI*2); ctx.fill(); }
-      ctx.restore();
-      if(t<1 || document.getElementById('loading')?.classList.contains('active')) mpFxRaf=requestAnimationFrame(frame);
-    }
-    mpFxRaf=requestAnimationFrame(frame);
-    return true;
-  };
-
-  // Preview build: in Appetize, plan tap unlocks locally and resumes the pending scan.
-  window.quizCheckout = async function(){
-    try{ window.premium=true; }catch(e){}
-    try{ localStorage.setItem('FACEMAX_QUIZ_UNLOCKED','1'); localStorage.setItem('FACEMAX_PREVIEW_UNLOCK','1'); }catch(e){}
-    try{ document.body.classList.add('is-premium'); }catch(e){}
-    try{ if(typeof showToast==='function') showToast('Premium activated'); }catch(e){}
-    setTimeout(function(){
-      try{
-        document.documentElement.classList.remove('fm-quiz-active','fm-fixed-screen');
-        if(typeof quizResumePendingScan==='function') { if(quizResumePendingScan()) return; }
-        if(window.onbState && onbState.pendingScan && typeof window.startScan==='function'){ onbState.pendingScan=false; window.startScan(); }
-      }catch(e){ console.warn(e); }
-    },140);
-  };
-  window.quizPlanCheckout=function(plan){ try{ if(typeof quizSelectPlan==='function') quizSelectPlan(plan); }catch(e){} setTimeout(()=>window.quizCheckout(),70); };
-
-  // Keep chrome in normal app screens, especially the result screen.
-  const oldOpen=window.openScreen;
-  if(typeof oldOpen==='function'){
-    window.openScreen=function(id){
-      if(['home','upload','loading','result','report','daily','profile','tool','foodscan','compare','gate'].includes(id)) document.documentElement.classList.remove('fm-quiz-active','fm-fixed-screen');
-      oldOpen(id);
-      if(['result','report','home','daily','profile','upload'].includes(id)) document.documentElement.classList.remove('fm-quiz-active','fm-fixed-screen');
-      if(id!=='loading') stopMpFx();
-    };
-  }
-
-  // Loading bars: all bars and percentages move together; no delayed/floating counter.
-  window.startScanBars = function(){
-    const ids=[['jawline','loadBarJawline','loadPctJawline'],['cheekbones','loadBarCheekbones','loadPctCheekbones'],['eyes','loadBarEyes','loadPctEyes'],['lips','loadBarLips','loadPctLips'],['nose','loadBarNose','loadPctNose'],['skin','loadBarSkin','loadPctSkin']];
-    if(window._fmScanBarsRAF) cancelAnimationFrame(window._fmScanBarsRAF);
-    const st={t0:performance.now(),cur:0,ids,target:null}; window._fmScanBarsState=st;
-    const upload=$id('scanUploading'); if(upload) upload.textContent='Running AI face analysis…';
-    function color(v){ if(v>=75)return'linear-gradient(90deg,#4ADE80,#22C55E)'; if(v>=60)return'linear-gradient(90deg,#A3E635,#4ADE80)'; if(v>=45)return'linear-gradient(90deg,#FBBF24,#A3E635)'; if(v>=30)return'linear-gradient(90deg,#FB923C,#FBBF24)'; return'linear-gradient(90deg,#EF4444,#FB923C)'; }
-    function frame(){
-      const s=window._fmScanBarsState; if(!s) return;
-      const goal=s.target==null?84:s.target; s.cur += (goal-s.cur)*(s.target==null?.018:.18); if(s.target!=null && Math.abs(goal-s.cur)<.5) s.cur=goal;
-      s.ids.forEach((row,i)=>{ const v=Math.max(0, Math.min(100, s.cur - i*.6)); const fill=$id(row[1]), pct=$id(row[2]); if(fill){fill.style.width=v.toFixed(1)+'%'; fill.style.background=color(v);} if(pct) pct.textContent=Math.round(v)+'%'; });
-      window._fmScanBarsRAF=requestAnimationFrame(frame);
-    }
-    st.ids.forEach(row=>{ const f=$id(row[1]), p=$id(row[2]); if(f){f.style.width='0%';f.style.background='';} if(p)p.textContent='0%'; });
-    frame();
-  };
-  window.finishScanBars = function(values, cb){
-    const vals=values||{}; const nums=[vals.jawline,vals.cheekbones,vals.eyes,vals.lips,vals.nose,vals.skin].map(v=>Number(v)||80); const avg=nums.reduce((a,b)=>a+b,0)/nums.length;
-    if(window._fmScanBarsState) window._fmScanBarsState.target=avg;
-    setTimeout(()=>{ if(window._fmScanBarsRAF) cancelAnimationFrame(window._fmScanBarsRAF); window._fmScanBarsRAF=null; window._fmScanBarsState=null; if(cb) cb(); }, 900);
-  };
-})();
-</script>
-
 
 <svg width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><defs>
 <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4ADE80"/><stop offset="50%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#EF4444"/></linearGradient>
