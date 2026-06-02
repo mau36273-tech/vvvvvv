@@ -518,6 +518,8 @@ function buildReportPrompt(body) {
     strongest_feature_hint: body?.strongest_feature,
     main_upgrade_area_hint: body?.main_upgrade_area,
   };
+  const jawlineHint = metrics && Number.isFinite(Number(metrics.jawline)) ? Math.round(Number(metrics.jawline)) : null;
+  const skinHint = metrics && Number.isFinite(Number(metrics.skin)) ? Math.round(Number(metrics.skin)) : null;
   return `
 You are FaceMax AI, a premium app for visual analysis of men's appearance.
 The iOS client runs MediaPipe FaceLandmarker on-device to extract 478 facial
@@ -532,9 +534,21 @@ Rules:
 - Do not promise bone-structure changes.
 - Give a practical looksmax / glow-up breakdown grounded in the per-metric scores.
 - Scores in your output should be plausible relative to the provided metrics (do not invent values that contradict them by more than ~5 points).
+- Be deterministic: the same input metrics MUST always produce the same scores. Do not add randomness or motivational rounding. Re-read the input numbers calmly and grade the same evidence the same way every time.
 - key_points MUST contain EXACTLY 3 or 4 entries. Each entry MUST be in the format "Problem | Fix" (with the pipe character). The Problem references a specific metric or visible aspect; the Fix is a concrete, actionable instruction (e.g. an exercise, product, habit, or visit to a specialist). NO water, NO generic motivational language. Lookmaxxing-style brutal honesty.
 - Do NOT include any 7-day plan, daily schedule, or week-by-week breakdown. The user does not want one.
 - archetype must be one of: Gigachad, Chad, Chadlite, Striker, Classic, Casual, Underdog, Wildcard (for women, also: Goddess, Stacy, Stacylite, Belle). Pick the archetype that best fits the overall_score band: 90+ Gigachad/Goddess, 82-89 Chad/Stacy, 73-81 Chadlite/Stacylite, 64-72 Striker/Belle, 55-63 Classic, 45-54 Casual, 30-44 Underdog, <30 Wildcard. Never use ethnic or regional labels.
+
+Scoring calibration (follow strictly):
+- Center an ordinary normal adult face around 65, NOT around 50. Average = 60-68, slightly above average = 69-77, attractive = 78-86, exceptional = 87-95.
+- overall_score must sit near the upper-middle of the per-feature scores for a normal clear photo, never drag below the features you rated.
+- Anchor the jawline sub-score within ±5 of the input metric (${jawlineHint ?? "unknown"}). Anchor the skin sub-score within ±5 of the input metric (${skinHint ?? "unknown"}). Do not contradict the on-device measurements by more than that.
+
+Per-feature scoring rubric (jawline + skin — use these definitions when you set the sub-scores AND when you write the explanation):
+- jawline: judge the visible definition of the lower face — mandible sharpness, gonial (jaw) angle, chin projection, submental / under-chin softness. Crisp, well-separated jaw with little under-chin fat scores 80+. Soft, rounded or fat-obscured jaw scores in the 50s-60s. Use the input jawline metric as your anchor and only deviate ≤5 points based on context (face_shape, symmetry).
+- skin: judge clarity and condition — tone evenness, blemishes / acne / scarring, pore size and surface texture, oiliness, redness, under-eye darkness / puffiness. Clear, even, smooth skin scores 80+; active breakouts, rough texture or heavy dark circles score in the 50s-60s. The client cannot send pixels, so reason from the skin input metric (${skinHint ?? "unknown"}) and treat it as the visible-skin proxy.
+
+Explain the score: the "jawline" and "skin" output fields MUST EACH begin with ONE short, specific sentence anchored to the actual sub-score you just assigned (mention the score bucket — e.g. "At {score}/100 your jaw reads soft from this angle..." or "At {score}/100 the skin signal looks uneven...") and only AFTER that sentence give the concrete improvement advice. The sentence MUST NOT be generic — it must mention what drove the number (jaw sharpness vs. under-chin softness, clear tone vs. visible breakouts / dark circles, etc.).
 
 App context (input metrics):
 ${JSON.stringify(userContext)}
@@ -586,6 +600,8 @@ Return strictly JSON:
 // Trim key_points to 3-4 entries (and backfill from the fallback when the
 // upstream model returned fewer). The legacy seven_day_plan key is
 // dropped so the client never has to render filler 7-day content again.
+// Also validates that the skin/jawline reasoning strings are non-empty so
+// the client never renders an empty "why this score" caption.
 function normalizeReport(parsed, fallback) {
   const kpFallback = fallback.key_points || [];
   if (!Array.isArray(parsed.key_points)) parsed.key_points = [];
@@ -598,6 +614,34 @@ function normalizeReport(parsed, fallback) {
   if (parsed.key_points.length > 4) parsed.key_points = parsed.key_points.slice(0, 4);
   // Strip any legacy seven_day_plan the model may have included.
   if ("seven_day_plan" in parsed) delete parsed.seven_day_plan;
+
+  // Ensure jawline/skin reasoning is non-trivial AND score-anchored. The
+  // text-only model sometimes returns a 1-3 word stub ("clean jaw.") which
+  // breaks the "why this score" caption on the report screen, and even when
+  // it returns a full sentence it often drops the "At {score}/100..." lead
+  // we asked for in the prompt. We backfill in BOTH cases so the user
+  // always sees a sentence tied to the actual sub-score before the advice.
+  const subScores = parsed.scores || {};
+  const ensureReason = (key) => {
+    const raw = String(parsed[key] == null ? "" : parsed[key]).trim();
+    const sub = Number(subScores[key]);
+    const bucket = Number.isFinite(sub)
+      ? (sub >= 80 ? "strong" : sub >= 65 ? "decent" : sub >= 50 ? "average" : "soft")
+      : "average";
+    const lead = Number.isFinite(sub)
+      ? `At ${Math.round(sub)}/100 your ${key === "jawline" ? "jaw definition" : "skin signal"} reads ${bucket}.`
+      : `Your ${key} reads ${bucket} from the provided metrics.`;
+    // Re-anchor the lead whenever the model failed to include it. Cheap
+    // detector: the FIRST ~12 characters must look like "At NN/100" or
+    // "At NN /100". If not, prepend our own lead and treat the model's
+    // text as the advice that follows.
+    const hasLead = /^\s*at\s+\d{1,3}\s*\/\s*100/i.test(raw);
+    if (raw.length >= 24 && hasLead) return;
+    const advice = raw || (fallback[key] || "");
+    parsed[key] = (lead + " " + advice).trim();
+  };
+  ensureReason("jawline");
+  ensureReason("skin");
   return parsed;
 }
 
@@ -894,6 +938,17 @@ async function fullReport(request, env) {
   const hasOpenAI = !!String(env.OPENAI_API_KEY || "").trim();
   if (hasOpenRouter) {
     result = await callGemini(env, body, fallback);
+    // Vision can hiccup on the pinned Vertex/EU provider (rate limit / transient
+    // error) and dead-ends the client with a "try again" modal. Before giving
+    // up, retry the SAME model+provider WITHOUT the image, anchored on the
+    // MediaPipe metrics the client already sent, so the user still gets a real
+    // AI report. Provider/model stay pinned — we only drop the photo.
+    const hadImage = !!(body && (body.image || (Array.isArray(body.images) && body.images.length)));
+    if ((result.failed || result.source === "fallback") && hadImage) {
+      const metricsBody = { ...body, image: null, images: [] };
+      const retry = await callGemini(env, metricsBody, fallback);
+      if (retry.ok && !retry.failed && retry.source !== "fallback") result = retry;
+    }
     if ((result.failed || result.source === "fallback") && hasOpenAI) {
       result = await callOpenAI(env, body, fallback);
     }
@@ -926,6 +981,13 @@ async function simpleTool(request, env, type) {
   // Real AI plan for skin / jawline. Personalised from the user's score and
   // face shape, supportive tone, strict JSON. Falls back to the static plan
   // above on any error so the screen never breaks.
+  //
+  // v4 (Umax-parity): the AI returns a STRUCTURED plan with named categories
+  // (AM / PM / Weekly / Lifestyle for skin; Posture / Active / De-bloat /
+  // Camera for jawline), plus a realistic timeline and a short "when to see
+  // a pro" note. For backwards compatibility with the existing client we
+  // also flatten the category steps into the legacy `steps[]` array so an
+  // un-upgraded UI still renders the plan.
   if ((type === "skin-plan" || type === "jawline-plan") && String(env.OPENROUTER_API_KEY || "").trim()) {
     const scoreHint = Math.max(0, Math.min(100, Math.round(Number(body.score) || 0))) || null;
     const faceShapeHint = body.face_shape ? String(body.face_shape) : null;
@@ -933,33 +995,139 @@ async function simpleTool(request, env, type) {
     const prompt = type === "skin-plan" ? `
 You are FaceMax AI, a supportive looksmaxxing skin coach. Build ONE concrete, realistic skin-improvement plan.
 User context (may be partial): ${context}
-Return ONLY valid JSON, no markdown: {"title":"Skin","text":"2-3 sentence supportive overview of how to improve skin clarity, tone and texture","steps":["6 short prioritized actions"]}
+Return ONLY valid JSON, no markdown:
+{
+  "title": "Skin",
+  "text": "2-3 sentence supportive overview of how to improve skin clarity, tone and texture, tailored to the score hint when present",
+  "expected_timeline": "realistic visible-change timeframe, e.g. 'Most people see clearer tone in 3-6 weeks; deeper texture changes take 8-12 weeks of consistency.'",
+  "categories": [
+    {"label":"Morning routine","steps":["2-3 specific AM actions"]},
+    {"label":"Evening routine","steps":["2-3 specific PM actions"]},
+    {"label":"Weekly add-ons","steps":["1-2 weekly habits"]},
+    {"label":"Lifestyle & nutrition","steps":["2-3 daily lifestyle habits"]}
+  ],
+  "red_flags": "1 short sentence on when to stop guessing and see a dermatologist"
+}
 Rules:
-- The steps MUST cover: a simple AM routine (gentle cleanser, moisturizer, daily broad-spectrum SPF), a PM routine (cleanse, moisturize, and ONE active such as a retinoid or salicylic/azelaic acid introduced slowly), lifestyle habits (sleep, hydration, not touching/picking the face, clean pillowcase), and nutrition (more water and omega-3s, less excess sugar/dairy if breakout-prone).
-- Each step is ONE short, specific, beginner-friendly instruction. No medical diagnosis, no prescription-only drugs, no promises of overnight results.
-- Encouraging, non-judgemental tone. Suggest seeing a dermatologist only for persistent or severe acne.` : `
+- Morning routine MUST cover: gentle cleanser, hydrating serum or light moisturizer, and broad-spectrum SPF 30+ every single day (including indoors). Mention specific, beginner-friendly ingredient hints (e.g. "niacinamide 5%", "hyaluronic acid", "mineral SPF") so the steps feel concrete.
+- Evening routine MUST cover: cleanse off the day (oil + foam if heavy sunscreen / makeup), moisturize, and ONE active such as a low-strength retinoid OR salicylic / azelaic acid introduced slowly (2-3x per week, then build).
+- Weekly add-ons SHOULD include: a clay or hydration mask 1x/week depending on skin type, and a gentle exfoliation cap (do not stack actives same night).
+- Lifestyle & nutrition MUST cover: 7-8h sleep, hydration through the day, hands-off-the-face, clean pillowcase 1-2x/week, more omega-3s and water, less excess sugar / dairy if acne-prone.
+- Each step is ONE short, specific, beginner-friendly instruction (≆30-90 chars). No medical diagnosis, no prescription-only drugs, no promises of overnight results.
+- expected_timeline must be realistic and honest — NEVER promise "clear skin in days".
+- red_flags MUST mention painful / cystic acne or scarring as the trigger to see a dermatologist.
+- Encouraging, non-judgemental tone. The user has a sub-score around ${scoreHint ?? "unknown"}/100; if it is low, lead with the gentlest steps first; if it is already high (≥80), focus on maintenance and refinement.` : `
 You are FaceMax AI, a supportive looksmaxxing jawline coach. Build ONE concrete, realistic plan to maximise VISIBLE jawline definition.
 User context (may be partial): ${context}
-Return ONLY valid JSON, no markdown: {"title":"Jawline","text":"2-3 sentence supportive overview","steps":["6 short prioritized actions"]}
+Return ONLY valid JSON, no markdown:
+{
+  "title": "Jawline",
+  "text": "2-3 sentence supportive overview that is honest about bone structure (fixed) vs. visible definition (very achievable via body-fat, posture, de-bloat and light muscle tone)",
+  "expected_timeline": "realistic visible-change timeframe, e.g. 'Posture and de-bloat changes can be visible in 1-2 weeks; meaningful jaw definition gains usually come with 6-12 weeks of lower body-fat plus consistent training.'",
+  "categories": [
+    {"label":"Posture & mewing","steps":["2-3 specific posture / tongue-position habits"]},
+    {"label":"Active training","steps":["2-3 specific jaw / neck exercises with reps or duration"]},
+    {"label":"De-bloat & body-fat","steps":["2-3 nutrition / lifestyle habits to reduce facial bloat and lower body-fat"]},
+    {"label":"Camera & grooming","steps":["1-2 ways to make the jaw look sharper in photos"]}
+  ],
+  "realistic_caveat": "1 short sentence that frankly acknowledges bone structure cannot change, but visible definition can"
+}
 Rules:
-- The steps MUST cover: tongue posture / mewing (tongue flat on the palate, lips together, nose breathing) and good head/neck posture; chewing resistance (firm gum or a jaw trainer) done in moderation; reducing facial bloat (less salt, enough sleep, hydration, limit alcohol); lowering overall body-fat via a mild calorie deficit plus protein since under-chin fat hides the jaw; and grooming/posture on camera.
-- Be honest that bone structure cannot change, but body-fat, de-bloating, posture and muscle tone make a real visible difference.
-- Each step is ONE short, specific, actionable instruction. No extreme dieting, no harmful advice. Encouraging tone.`;
-    try {
-      const result = await callOpenRouter(env, prompt, [], { tries: 2 });
-      if (result.ok && result.text) {
+- Posture & mewing MUST cover: tongue posture (tongue flat on the roof of the mouth, lips closed, breathing through the nose), chin slightly tucked, shoulders back, and avoiding the head-forward / neck-down phone slouch.
+- Active training MUST include: specific exercises with reps or duration (e.g. "Chin tucks: 3 sets of 10, hold 5s each", "Neck extension stretch: hold 8s, 3x per side", "Firm gum or jaw trainer: 10 min per side, alternate days"). Warn to stop if the jaw aches.
+- De-bloat & body-fat MUST cover: lowering added salt, limiting alcohol, sleeping 7-8h, hydrating through the day, AND lowering overall body-fat with a mild calorie deficit + higher protein so under-chin fat stops hiding the jaw.
+- Camera & grooming SHOULD cover: side / 3⁄4 lighting, chin slightly forward (not down), keeping stubble and neckline tidy.
+- Each step is ONE short, specific, actionable instruction (≆30-90 chars). No extreme dieting (do not suggest crash deficits or fasting beyond 16h), no harmful advice.
+- expected_timeline must be realistic and honest.
+- The user has a sub-score around ${scoreHint ?? "unknown"}/100; if it is below 60, the lowest-hanging fruit is usually de-bloat + posture (lead with those); if it is already high, focus on refinement and camera.
+- Encouraging tone.`;
+    // Outer retry: callOpenRouter only retries on HTTP failure, not on JSON
+    // parse failure. The skin-plan prompt is long enough that the model
+    // occasionally drops a stray field (e.g. omits "categories") or returns
+    // markdown instead of pure JSON, which throws here and silently falls
+    // back to the static plan. Retry the full parse+validate up to 3 times
+    // so a single bad response from Gemini doesn't degrade the iOS UI.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const result = await callOpenRouter(env, prompt, [], { tries: 2 });
+        if (!result.ok || !result.text) continue;
         let txt = String(result.text).trim();
         if (txt.startsWith("```")) txt = txt.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
         const start = txt.indexOf("{");
         const end = txt.lastIndexOf("}");
         if (start >= 0 && end > start) txt = txt.slice(start, end + 1);
         const parsed = JSON.parse(txt);
-        const steps = Array.isArray(parsed.steps) ? parsed.steps.map(s => String(s || "").trim()).filter(Boolean).slice(0, 8) : [];
-        if (parsed && typeof parsed.text === "string" && parsed.text.trim() && steps.length >= 3) {
-          return json({ ok: true, source: "openrouter", data: { title: map[type].title, text: String(parsed.text).trim(), steps }, input: body });
+
+        // Normalize categories[].steps[]: each step trimmed, non-empty, capped.
+        const categories = Array.isArray(parsed.categories)
+          ? parsed.categories
+              .map(c => ({
+                label: String((c && c.label) || "").trim(),
+                steps: Array.isArray(c && c.steps)
+                  ? c.steps.map(s => String(s || "").trim()).filter(Boolean).slice(0, 4)
+                  : []
+              }))
+              .filter(c => c.label && c.steps.length)
+              .slice(0, 5)
+          : [];
+
+        // Legacy flat steps: prefer model's flat array if provided, else
+        // flatten categories so an un-upgraded client still works.
+        let flatSteps = Array.isArray(parsed.steps)
+          ? parsed.steps.map(s => String(s || "").trim()).filter(Boolean).slice(0, 10)
+          : [];
+        if (!flatSteps.length && categories.length) {
+          flatSteps = categories.flatMap(c => c.steps.map(s => `${c.label}: ${s}`)).slice(0, 12);
         }
+
+        const text = parsed && typeof parsed.text === "string" ? parsed.text.trim() : "";
+        const timeline = parsed && typeof parsed.expected_timeline === "string" ? parsed.expected_timeline.trim() : "";
+        const tail = type === "skin-plan"
+          ? (parsed && typeof parsed.red_flags === "string" ? parsed.red_flags.trim() : "")
+          : (parsed && typeof parsed.realistic_caveat === "string" ? parsed.realistic_caveat.trim() : "");
+
+        // Require the FULL structured payload: overview + ≥3 categories +
+        // timeline + tail. A response missing categories is the failure
+        // mode we just fixed — retry instead of returning a degraded plan.
+        const totalSteps = categories.reduce((n, c) => n + c.steps.length, 0);
+        const structured = text && categories.length >= 3 && totalSteps >= 4 && timeline && tail;
+        if (structured) {
+          return json({
+            ok: true,
+            source: "openrouter",
+            data: {
+              title: map[type].title,
+              text,
+              expected_timeline: timeline,
+              [type === "skin-plan" ? "red_flags" : "realistic_caveat"]: tail,
+              categories,
+              steps: flatSteps
+            },
+            input: body
+          });
+        }
+        // Loosened fallback: on the final attempt, if we at least have an
+        // overview + 3 flat steps, return that as openrouter (better than
+        // static) — still flagged as openrouter so the client renders it.
+        if (attempt === 2 && text && (totalSteps >= 3 || flatSteps.length >= 3)) {
+          return json({
+            ok: true,
+            source: "openrouter",
+            data: {
+              title: map[type].title,
+              text,
+              expected_timeline: timeline || null,
+              [type === "skin-plan" ? "red_flags" : "realistic_caveat"]: tail || null,
+              categories,
+              steps: flatSteps
+            },
+            input: body
+          });
+        }
+      } catch {
+        // JSON parse error or unexpected shape — fall through to next attempt.
       }
-    } catch {}
+    }
   }
 
   return json({ ok: true, source: "fallback", data: map[type] || map["dating-photo"], input: body });

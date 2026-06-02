@@ -4,8 +4,8 @@
   "webDir": "web",
   "bundledWebRuntime": false,
   "ios": {
-    "contentInset": "never",
-    "scrollEnabled": true,
+    "contentInset": "always",
+    "scrollEnabled": false,
     "backgroundColor": "#100A14",
     "preferredContentMode": "mobile"
   },
@@ -20,10 +20,7 @@
       "showSpinner": false
     },
     "Camera": {
-      "permissions": [
-        "camera",
-        "photos"
-      ]
+      "permissions": ["camera", "photos"]
     }
   }
 }
