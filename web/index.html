@@ -4,8 +4,8 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="build-version" content="v-1780329029000">
-  <!-- BUILD: v-1780329029000 -->
+  <meta name="build-version" content="v-fix-paywall-layout-20260602">
+  <!-- BUILD: v-fix-paywall-layout-20260602 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#100A14">
@@ -52,6 +52,12 @@ body{display:flex;justify-content:center}
 button,input{font-family:inherit;color:inherit}
 .app{width:min(100%,460px);min-height:100svh;position:relative;padding:calc(env(safe-area-inset-top,0px) + 6px) 18px calc(104px + env(safe-area-inset-bottom,0px));background:radial-gradient(70% 36% at 50% -10%,rgba(167,139,250,.22),transparent 65%),radial-gradient(80% 30% at 50% -4%,rgba(232,121,249,.14),transparent 70%),radial-gradient(60% 28% at 50% 4%,rgba(240,161,200,.08),transparent 75%),var(--bg)}
 html.fm-native .app{padding-top:calc(env(safe-area-inset-top,0px) + 4px);padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
+/* Appetize/iOS layout fix: keep chrome anchored to the actual viewport.
+   Body scrolling made quiz CTA/nav drift; screens own their scroll instead. */
+html.fm-native body{height:100dvh;overflow:hidden}
+html.fm-native .app{height:100dvh;min-height:100dvh;overflow:hidden;padding-bottom:calc(92px + max(0px, env(safe-area-inset-bottom,0px) - 18px))}
+html.fm-native .screen.active:not(#quiz):not(#genderSelect):not(#capture):not(#quizPaywall):not(#quizResult){height:calc(100dvh - 104px - max(0px, env(safe-area-inset-bottom,0px) - 18px));overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px}
+
 html.fm-native body{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 html.fm-native a[target="_blank"]{cursor:pointer}
 .screen{display:none}
@@ -201,8 +207,8 @@ h3{margin:0 0 12px;color:var(--muted);text-transform:uppercase;font-size:11px;fo
 .photo-frame img{width:100%;max-height:480px;display:block;object-fit:contain;background:#14091A}
 .face-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5}
 .scan-grid{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(167,139,250,.10) 1px,transparent 1px),linear-gradient(rgba(167,139,250,.08) 1px,transparent 1px);background-size:28px 28px;opacity:.4;z-index:2;mix-blend-mode:screen}
-.scan-beam{position:absolute;left:0;right:0;top:-60px;height:60px;z-index:3;pointer-events:none;background:linear-gradient(to bottom,transparent,rgba(167,139,250,.65),rgba(196,181,253,.30),transparent);box-shadow:0 0 24px rgba(167,139,250,.55);animation:scanBeam 1.6s linear infinite;mix-blend-mode:screen}
-@keyframes scanBeam{to{transform:translateY(640px)}}
+.scan-beam{position:absolute;left:0;right:0;top:-34%;height:34%;z-index:3;pointer-events:none;background:linear-gradient(to bottom,transparent,rgba(167,139,250,.45),rgba(196,181,253,.22),transparent);box-shadow:0 0 18px rgba(167,139,250,.38);animation:scanBeam 2.05s cubic-bezier(.42,0,.22,1) infinite;mix-blend-mode:screen}
+@keyframes scanBeam{0%{top:-34%;opacity:0}10%{opacity:1}88%{opacity:1}100%{top:100%;opacity:0}}
 .metric-row{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--surface-2);border-radius:12px;border:1px solid var(--line);margin-bottom:8px}
 .metric-row:last-child{margin-bottom:0}
 .metric-ico{width:32px;height:32px;border-radius:9px;flex-shrink:0;background:var(--p-dim);display:grid;place-items:center;color:var(--p-2)}
@@ -353,9 +359,9 @@ h3{margin:0 0 12px;color:var(--muted);text-transform:uppercase;font-size:11px;fo
  * enough bottom padding so content isn't covered. */
 .bottom{position:fixed;left:50%;bottom:8px;transform:translateX(-50%);width:min(calc(100vw - 16px),438px);background:rgba(13,13,17,.86);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border-radius:20px;padding:5px;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;z-index:50;box-shadow:0 18px 50px rgba(0,0,0,.45),0 0 0 .5px rgba(255,255,255,.04);will-change:auto}
 @supports (padding: env(safe-area-inset-bottom)){
-  .bottom{bottom:max(8px,env(safe-area-inset-bottom))}
+  .bottom{bottom:max(6px,calc(env(safe-area-inset-bottom,0px) - 20px))}
 }
-html.fm-native .bottom{bottom:max(8px,env(safe-area-inset-bottom,0px))}
+html.fm-native .bottom{bottom:max(6px,calc(env(safe-area-inset-bottom,0px) - 20px))}
 .nav{height:50px;border:0;background:transparent;color:var(--dim);border-radius:13px;font-weight:600;font-size:10.5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:background .22s cubic-bezier(.34,1.3,.4,1),color .22s ease;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .nav.active{background:rgba(167,139,250,.16);color:var(--p-2)}
 .nav.active svg{transform:translateY(-1px) scale(1.06)}
@@ -851,7 +857,11 @@ html.fm-native.fm-quiz-active .app{padding-top:calc(env(safe-area-inset-top,0px)
 .quiz-shell{display:flex;flex-direction:column;min-height:calc(100svh - 80px);position:relative}
 /* The quiz itself is locked to one screen — every step fits without scrolling.
    Other screens that reuse .quiz-shell (gender, capture, result) keep min-height. */
-#quiz .quiz-shell{height:calc(100svh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 28px);min-height:0;overflow:hidden}
+#quiz .quiz-shell{height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 24px);min-height:0;overflow:hidden}
+html.fm-native.fm-quiz-active body{overflow:hidden!important}
+html.fm-native.fm-quiz-active .app{height:100dvh;min-height:100dvh;overflow:hidden;padding-bottom:max(12px,env(safe-area-inset-bottom,0px))}
+#quiz.screen.active{height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 18px);overflow:hidden}
+#quiz .quiz-body{height:100%;overflow:hidden}
 .quiz-top{display:flex;align-items:center;gap:14px;margin:0 2px clamp(14px,2.6vh,24px);flex-shrink:0}
 .quiz-back{background:none;border:0;color:var(--muted);font-size:28px;font-weight:300;width:30px;height:30px;cursor:pointer;line-height:1;padding:0;transition:color .15s}
 .quiz-back:hover{color:var(--text)}
@@ -877,8 +887,8 @@ html.fm-native.fm-quiz-active .app{padding-top:calc(env(safe-area-inset-top,0px)
    Continue button stays pinned at the bottom. Cards keep a consistent height
    across every step; when there are too many to fit, the list scrolls while
    the Continue button stays pinned. */
-.quiz-options{flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:clamp(8px,1.5vh,12px);margin-bottom:clamp(10px,2vh,16px);justify-content:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.quiz-option{flex:0 0 auto;height:clamp(56px,8.4vh,74px);display:flex;align-items:center;gap:14px;padding:0 16px;background:var(--surface);border:1.5px solid var(--line-2);border-radius:16px;color:var(--text);font-size:15px;font-weight:600;letter-spacing:-0.012em;cursor:pointer;transition:transform .14s cubic-bezier(.3,1.6,.6,1),background .18s,border-color .18s,box-shadow .18s;text-align:left;width:100%}
+.quiz-options{flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:clamp(8px,1.5vh,12px);margin-bottom:clamp(10px,2vh,16px);justify-content:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y}
+.quiz-option{flex:0 0 auto;height:clamp(52px,7.6vh,68px);display:flex;align-items:center;gap:14px;padding:0 16px;background:var(--surface);border:1.5px solid var(--line-2);border-radius:16px;color:var(--text);font-size:15px;font-weight:600;letter-spacing:-0.012em;cursor:pointer;transition:transform .14s cubic-bezier(.3,1.6,.6,1),background .18s,border-color .18s,box-shadow .18s;text-align:left;width:100%}
 .quiz-option:hover{background:var(--surface-2);border-color:var(--line-3);transform:translateY(-1px)}
 .quiz-option:active{transform:scale(.985)}
 .quiz-option.selected{background:rgba(167,139,250,.12);border-color:var(--p);box-shadow:0 0 0 3px rgba(167,139,250,.22),0 8px 26px rgba(232,121,249,.22)}
@@ -906,7 +916,7 @@ html.fm-native.fm-quiz-active .app{padding-top:calc(env(safe-area-inset-top,0px)
 .quiz-pill:active{transform:scale(.985)}
 .quiz-pill.selected{background:rgba(167,139,250,.12);border-color:var(--p);color:var(--p-2);box-shadow:0 0 0 3px rgba(167,139,250,.22),0 8px 26px rgba(232,121,249,.22)}
 
-.quiz-cta{padding:clamp(8px,1.6vh,16px) 0 4px;margin-top:auto;flex-shrink:0}
+.quiz-cta{padding:clamp(8px,1.6vh,16px) 0 4px;margin-top:auto;flex-shrink:0;position:relative;z-index:3;background:linear-gradient(to top,var(--bg) 72%,rgba(16,10,20,0))}
 .quiz-cta .btn{height:clamp(50px,7.2vh,56px);font-size:16px}
 .quiz-cta-note{text-align:center;font-size:11.5px;color:var(--dim);margin:10px 0 0;letter-spacing:0.01em}
 .quiz-legal-note{text-align:center;font-size:11px;color:var(--muted);line-height:1.5;margin:14px auto 0;letter-spacing:0.005em;max-width:340px}
@@ -2483,7 +2493,7 @@ const API_BASE = "https://facemax-api.voou96329.workers.dev";
 // (The on-device MediaPipe scan has zero per-use cost. Premium gates only
 // the OpenAI-powered full AI report.) Kept as `Infinity` so legacy call
 // sites that ask `freeScansLeft()` keep working without code surgery.
-const FREE_SCAN_LIMIT = Infinity;
+const FREE_SCAN_LIMIT = 0;
 const FREE_SCAN_LOCAL_KEY = "facemax_free_scans_used";
 let freeScansUsedLocal = (() => {
   try { return Math.max(0, parseInt(localStorage.getItem(FREE_SCAN_LOCAL_KEY) || "0", 10)) || 0; }
@@ -3974,8 +3984,8 @@ window.startScan = async function(){
   // the web preview where `premium` is force-true for review. Marks the scan as
   // pending and resumes after a successful purchase (see quizResumePendingScan).
   // No payment => no analysis.
-  if (!hasUnlockedAccess() && window.onbState && onbState.flow === "onboarding") {
-    onbState.pendingScan = true;
+  if (!hasUnlockedAccess()) {
+    if (window.onbState) onbState.pendingScan = true;
     quizShowPaywall();
     return;
   }
@@ -5268,21 +5278,10 @@ window.payLava = async function(plan){
         return;
       }
       if (res && res.error === "cancelled") return;
-      // Internal test builds (Appetize / TestFlight without a configured
-      // RevenueCat key, and the simulator which has no StoreKit) can't complete
-      // a real Apple purchase. So the pay->analysis flow stays testable, fall
-      // back to the same simulated unlock the web preview uses. This NEVER runs
-      // in a production build, which ships a real RevenueCat key.
-      const _rcConfigured = !!(window.FACEMAX_REVENUECAT_API_KEY || "");
-      if (res && (res.error === "revenuecat_unavailable" || res.error === "not_native") && !_rcConfigured) {
-        try { localStorage.setItem("FACEMAX_QUIZ_UNLOCKED", "1"); } catch {}
-        premium = true;
-        try { document.body.classList.toggle("is-premium", true); } catch {}
-        showToast("Premium activated (test build)", 3000);
-        applyPremiumToResult();
-        return;
-      }
-      showToast("Purchase error: " + ((res && res.error) || "unknown"));
+      // No simulator/dev bypass here: scans must stay locked until a real
+      // RevenueCat / Apple entitlement is confirmed. Configure the iOS
+      // RevenueCat public SDK key at the bottom of this file before TestFlight.
+      showToast("Purchase unavailable: configure RevenueCat for iOS", 4200);
       return;
     } catch (err) {
       showToast("Purchase error");
@@ -6819,9 +6818,9 @@ function quizFinishToAnalyze(){
   quizHaptic();
   // Set done flag now so a refresh mid-flow doesn't re-start the quiz.
   quizSetDone();
-  // After the test, show the test result first. The big "Scan my face" button
-  // on that screen continues to the gender picker → dual-photo capture.
-  quizShowResult();
+  // Paywall-first funnel: after the quiz, show the subscription plans.
+  // Face scanning / AI analysis is only allowed after RevenueCat purchase unlock.
+  quizShowPaywall();
 }
 
 function quizGoalsLabel(){
