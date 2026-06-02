@@ -4,8 +4,8 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="build-version" content="v-glowup-flow-polish-20260602">
-  <!-- BUILD: v-glowup-flow-polish-20260602 -->
+  <meta name="build-version" content="v-fix-paywall-layout-20260602">
+  <!-- BUILD: v-fix-paywall-layout-20260602 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#100A14">
@@ -1141,88 +1141,6 @@ html.fm-native .qr-ring-num{font-feature-settings:'ss01','tnum','cv11';letter-sp
   .fm-result-v2 .metric-row-val{font-size:14px}
   .fm-result-v2 .metric-row-sub{font-size:10px}
 }
-
-
-/* ===================== FINAL POLISH PATCH: quiz/paywall/glow-up flow ===================== */
-/* Quiz: whole screen stays fixed; only options can scroll; CTA is safe-area pinned. */
-#quiz.screen.active{height:100dvh!important;overflow:hidden!important;padding:0!important}
-#quiz .quiz-shell{height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 22px)!important;overflow:hidden!important;display:flex!important}
-#quiz .quiz-body{min-height:0!important;overflow:hidden!important;display:flex!important;color:#fff!important}
-#quiz .quiz-options,#quiz .quiz-pills{overflow-y:auto!important;min-height:0!important;-webkit-overflow-scrolling:touch!important;padding-bottom:8px!important}
-#quiz .quiz-cta{position:sticky!important;bottom:0!important;margin-top:auto!important;padding:12px 0 calc(8px + env(safe-area-inset-bottom,0px))!important;background:linear-gradient(180deg,rgba(16,10,20,0),var(--bg) 28%)!important;z-index:8!important}
-#quiz .quiz-title,#quiz .quiz-sub,#quiz .quiz-option,#quiz .quiz-option-text b,#quiz .quiz-pill{color:#fff!important}
-#quiz .quiz-option-text span,#quiz .quiz-sub{color:rgba(255,255,255,.72)!important}
-
-
-/* Mobile/WebView quiz tap polish: iOS can keep :hover after a tap and the
-   selected card used to jump/scale, which made the highlight look misaligned. */
-#quiz .quiz-option,#quiz .quiz-pill{position:relative!important;transform:none!important}
-#quiz .quiz-option:hover,#quiz .quiz-option:active,#quiz .quiz-option.selected,#quiz .quiz-grid .quiz-option.selected,#quiz .quiz-pill:hover,#quiz .quiz-pill:active,#quiz .quiz-pill.selected{transform:none!important}
-#quiz .quiz-option:focus,#quiz .quiz-pill:focus,#quiz .btn:focus{outline:none!important}
-#quiz .quiz-option.selected{border-color:rgba(196,181,253,.95)!important;background:linear-gradient(135deg,rgba(167,139,250,.22),rgba(232,121,249,.10))!important;box-shadow:0 0 0 1px rgba(196,181,253,.28),0 12px 32px rgba(167,139,250,.18)!important}
-#quiz .quiz-option-tick{margin-left:auto!important}
-
-/* Quiz analyze: DePuff-style progress circles instead of a single spinner. */
-#quizAnalyze .quiz-shell{height:100dvh!important;min-height:0!important;justify-content:center!important;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))!important;overflow:hidden!important}
-.qa-ring{width:178px!important;height:178px!important;margin-bottom:28px!important;background:radial-gradient(circle at 50% 50%,rgba(167,139,250,.18),transparent 57%)!important;border:1px solid rgba(196,181,253,.20)!important;box-shadow:0 0 45px rgba(167,139,250,.20),inset 0 0 30px rgba(255,255,255,.04)!important;animation:none!important;display:grid!important;place-items:center!important}
-.qa-ring::before,.qa-ring::after{content:""!important;position:absolute!important;border-radius:50%!important;background:transparent!important;box-shadow:none!important;animation:qaCirclePulse 1.65s ease-in-out infinite!important}
-.qa-ring::before{inset:18px!important;border:2px solid rgba(196,181,253,.42)!important;border-top-color:#C4B5FD!important}
-.qa-ring::after{inset:46px!important;border:2px solid rgba(232,121,249,.36)!important;border-bottom-color:#E879F9!important;animation-delay:.28s!important}
-.qa-ring{--dot:rgba(255,255,255,.88)}
-.qa-ring > *{display:none!important}
-@keyframes qaCirclePulse{0%,100%{transform:scale(.96);opacity:.55}50%{transform:scale(1.04);opacity:1}}
-
-/* Readiness result: remove close X, allow scrolling, keep CTA fixed with safe-area. */
-#quizResult .qr-close{display:none!important}
-#quizResult.screen.active{height:100dvh!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;padding-bottom:0!important}
-#quizResult .quiz-shell{min-height:100dvh!important;padding-bottom:136px!important;overflow:visible!important}
-#quizResult .qr-footer{padding:22px 18px calc(18px + env(safe-area-inset-bottom,0px))!important;background:linear-gradient(180deg,rgba(16,10,20,0) 0%,var(--bg) 38%)!important}
-
-/* Gender/photo capture: true full viewport and no title overlap from back arrow. */
-html.fm-fixed-screen .app{height:100dvh!important;min-height:100dvh!important;overflow:hidden!important;padding-top:calc(env(safe-area-inset-top,0px) + 8px)!important;padding-bottom:max(10px,env(safe-area-inset-bottom,0px))!important}
-#genderSelect.screen.active,#capture.screen.active{height:100%!important;overflow:hidden!important}
-#genderSelect .quiz-shell,#capture .quiz-shell{height:100%!important;min-height:0!important;overflow:hidden!important;padding-top:2px!important}
-.onb-back{top:calc(env(safe-area-inset-top,0px) + 6px)!important;left:10px!important;background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.08)!important;z-index:12!important}
-.onb-head{padding-left:44px!important;padding-right:44px!important;margin-top:0!important;flex-shrink:0!important}
-.onb-foot{position:sticky!important;bottom:0!important;padding:14px 0 calc(8px + env(safe-area-inset-bottom,0px))!important;background:linear-gradient(180deg,rgba(16,10,20,0),var(--bg) 30%)!important;z-index:8!important}
-.gender-cards,.cap-stage{min-height:0!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
-.gender-card{max-height:calc((100dvh - 250px)/2)!important;min-height:142px!important;width:min(100%,330px)!important;aspect-ratio:1.55/1!important;flex:1 1 0!important}
-.cap-oval{height:clamp(190px,42dvh,315px)!important}
-
-/* Paywall: after both photos only; three subscription buttons are the only actions. */
-#quizPaywall.screen.active{height:100dvh!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
-#quizPaywall .quiz-shell{min-height:100dvh!important;padding:8px 0 calc(18px + env(safe-area-inset-bottom,0px))!important;justify-content:center!important}
-#quizPaywall .quiz-top,#quizPaywall .qp-insights,#quizPaywall #quizPayBtn,#quizPaywall .qp-pay-disclosure,#quizPaywall .qp-trust,#quizPaywall .qp-free-cta,#quizPaywall .qp-footer,#quizPaywall .qp-urgency{display:none!important}
-#quizPaywall .qp-hero{margin:0 0 18px!important}
-#quizPaywall .qp-emoji{font-size:46px!important;margin-bottom:8px!important}
-#quizPaywall .qp-title{font-size:25px!important;margin-bottom:8px!important}
-#quizPaywall .qp-sub{font-size:13.5px!important;margin-bottom:18px!important;color:rgba(255,255,255,.72)!important}
-#quizPaywall .qp-plans{gap:12px!important;margin:0!important}
-#quizPaywall .qp-plan{min-height:72px!important;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.028))!important}
-#quizPaywall .qp-plan:after{content:"Tap to start";font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(196,181,253,.86);position:absolute;right:16px;bottom:8px}
-
-/* Scan animation: no Apple Vision overlay, no cheap grid or stripe; only soft points/mesh canvas on loading. */
-.scan-grid,.scan-beam{display:none!important}
-#loading.screen.active{height:calc(100dvh - 104px - env(safe-area-inset-bottom,0px))!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;padding-bottom:18px!important}
-#loading .scan-photo{box-shadow:0 0 0 1px rgba(196,181,253,.20),0 0 48px rgba(167,139,250,.22),inset 0 0 50px rgba(167,139,250,.08)!important}
-#loading .scan-photo:after{content:"";position:absolute;inset:-18px;border-radius:50%;background:radial-gradient(circle,rgba(167,139,250,.18),transparent 64%);pointer-events:none;animation:orbBreath 2.4s ease-in-out infinite}
-#result .face-canvas,#report .face-canvas,#tool .face-canvas{display:none!important}
-
-/* Bottom nav: anchored at bottom with safe-area padding; Glow Up plan replaces separate plan tabs. */
-.bottom-v2{bottom:0!important;padding-bottom:calc(9px + env(safe-area-inset-bottom,0px))!important;transform:none!important}
-html.fm-native .bottom-v2{bottom:0!important}
-.tools-grid.compact .tool:nth-child(3),.tools-grid.compact .tool:nth-child(4){display:none!important}
-.tools-grid.compact .tool.featured{grid-column:span 2!important}
-
-/* Glow Up Plan short-card system. */
-.glow-plan-block{display:grid;gap:10px;margin:2px 0 16px}
-.glow-card{background:linear-gradient(180deg,rgba(167,139,250,.075),rgba(255,255,255,.03));border:1px solid rgba(167,139,250,.16);border-radius:18px;padding:14px 14px}
-.glow-card h3{margin:0 0 9px;color:#fff;font-size:12px;letter-spacing:.10em;text-transform:uppercase}
-.glow-focus{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.glow-focus b{font-size:17px;letter-spacing:-.02em;line-height:1.2}
-.glow-score{display:inline-flex;align-items:center;justify-content:center;width:50px;height:50px;border-radius:50%;background:rgba(167,139,250,.14);border:1px solid rgba(196,181,253,.28);font-weight:900;color:#fff;flex-shrink:0}
-.glow-checks{display:grid;gap:8px}.glow-check{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:650;color:#fff}.glow-check i{width:18px;height:18px;border-radius:50%;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.35);display:grid;place-items:center;color:#86efac;font-style:normal;font-size:11px}.glow-muted{font-size:12.5px;color:rgba(255,255,255,.62);line-height:1.45;margin-top:3px}.glow-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.glow-mini{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:15px;padding:12px}.glow-mini b{display:flex;justify-content:space-between;gap:8px;font-size:13.5px}.glow-mini span{display:block;margin-top:5px;font-size:12px;color:rgba(255,255,255,.62);line-height:1.35}.glow-road{display:grid;gap:7px}.glow-day{display:flex;align-items:center;gap:9px;font-size:12.5px;color:rgba(255,255,255,.82)}.glow-day b{width:42px;color:#C4B5FD}.glow-progress{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.glow-p{border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);padding:10px;text-align:center}.glow-p b{display:block;font-size:16px}.glow-p span{font-size:10.5px;color:rgba(255,255,255,.55);text-transform:uppercase;font-weight:700;letter-spacing:.06em}
-
 </style>
 <style>
 /* ===================== ONBOARDING REWORK (gender select + dual capture) ===================== */
@@ -1579,37 +1497,37 @@ html.fm-fixed-screen .screen.active { height:100%; }
         <span class="qp-sparkle"></span><span class="qp-sparkle"></span><span class="qp-sparkle"></span><span class="qp-sparkle"></span>
         <div class="qp-emoji">✨</div>
       </div>
-      <div class="qp-badge">Photos ready</div>
-      <h1 class="qp-title">Start your <b>AI face scan</b></h1>
-      <p class="qp-sub" id="qpSub">Choose a plan to run your scan. Your photos are analyzed only after this step.</p>
+      <div class="qp-badge">Your analysis is ready</div>
+      <h1 class="qp-title">Unlock your <b>aesthetic potential</b></h1>
+      <p class="qp-sub" id="qpSub">Based on your profile, we built a personalized AI analysis tailored to <b id="qpGoals">your goals</b>.</p>
     </div>
 
     <div class="qp-insights" id="qpInsights"><!-- filled by JS --></div>
 
     <div class="qp-plans" id="qpPlans">
-      <button class="qp-plan" data-plan="weekly" onclick="quizSelectAndCheckout('weekly')">
+      <button class="qp-plan" data-plan="weekly" onclick="quizSelectPlan('weekly')">
         <span class="qp-plan-radio"></span>
         <span class="qp-plan-info">
           <span class="qp-plan-name">1 week</span>
-          <span class="qp-plan-meta">Weekly access</span>
+          <span class="qp-plan-meta">Try everything · cancel anytime</span>
         </span>
         <span class="qp-plan-price"><b>$2.90</b></span>
       </button>
-      <button class="qp-plan" data-plan="monthly" onclick="quizSelectAndCheckout('monthly')">
+      <button class="qp-plan" data-plan="monthly" onclick="quizSelectPlan('monthly')">
         <span class="qp-plan-tag">Most popular</span>
         <span class="qp-plan-radio"></span>
         <span class="qp-plan-info">
           <span class="qp-plan-name">1 month</span>
-          <span class="qp-plan-meta">Monthly access</span>
+          <span class="qp-plan-meta">Full access · all AI tools · key insights</span>
         </span>
         <span class="qp-plan-price"><b>$9.90</b></span>
       </button>
-      <button class="qp-plan" data-plan="yearly" onclick="quizSelectAndCheckout('yearly')">
+      <button class="qp-plan" data-plan="yearly" onclick="quizSelectPlan('yearly')">
         <span class="qp-plan-tag" style="background:linear-gradient(90deg,#fbbf24,#f59e0b)">Best value</span>
         <span class="qp-plan-radio"></span>
         <span class="qp-plan-info">
           <span class="qp-plan-name">1 year</span>
-          <span class="qp-plan-meta">Best long-term value</span>
+          <span class="qp-plan-meta">Billed annually · save the most</span>
         </span>
         <span class="qp-plan-price"><b>$39.90</b></span>
       </button>
@@ -1706,12 +1624,12 @@ html.fm-fixed-screen .screen.active { height:100%; }
       </div>
     </div>
 
-    <div class="home-tools-hdr"><h3>Glow-up tools</h3></div>
+    <div class="home-tools-hdr"><h3>AI tools</h3></div>
     <div class="tools-grid compact">
       <div class="tool featured" onclick="openDailyHub()">
         <div class="tool-ico"><svg viewBox="0 0 24 24"><path d="M12 2c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 6-12z"/><path d="m13 3-7 11h6l-1 7 7-11h-6z"/></svg></div>
         <span class="lock-pill"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Pro</span>
-        <b>Glow Up Plan</b><span>Jawline · skin · de-puff · 7-day checklist</span>
+        <b>Daily debloat</b><span>Food scanner · water · routine · exercises · meal plan</span>
       </div>
       <div class="tool" onclick="openFoodScan()">
         <div class="tool-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="4"/><path d="M5 7h3l1.5-2h5L16 7h3v12H5z"/></svg></div>
@@ -2286,9 +2204,9 @@ html.fm-fixed-screen .screen.active { height:100%; }
 <!-- =============================== DAILY HUB =============================== -->
 <section id="daily" class="screen">
   <div class="daily-hero">
-    <span class="hero-eyebrow">Glow Up Plan</span>
-    <h2 id="dailyGreeting">Today's plan</h2>
-    <p>Short daily cards for jawline definition, skin glow, de-puff, and progress. Scan, plan, repeat.</p>
+    <span class="hero-eyebrow">Daily care</span>
+    <h2 id="dailyGreeting">Good morning</h2>
+    <p>Tackle facial bloating at the source — food, water, routines, and exercises that move puffiness off your face.</p>
     <div class="daily-streaks">
       <div class="streak-card">
         <div class="sc-ico"><svg viewBox="0 0 24 24"><path d="M12 2c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 5-10z"/></svg></div>
@@ -2301,9 +2219,7 @@ html.fm-fixed-screen .screen.active { height:100%; }
     </div>
   </div>
 
-  <div class="glow-plan-block" id="glowPlanBlock"></div>
-
-  <div class="sec-hdr"><h3>Today's tools</h3></div>
+  <div class="sec-hdr"><h3>Today</h3></div>
   <div class="daily-grid">
     <div class="daily-tile featured wide" onclick="openFoodScan()">
       <div class="dt-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="4"/><path d="M5 7h3l1.5-2h5L16 7h3v12H5z"/></svg></div>
@@ -2547,7 +2463,7 @@ html.fm-fixed-screen .screen.active { height:100%; }
   </button>
   <button class="nav" data-screen="daily" onclick="openDailyHub()">
     <svg viewBox="0 0 24 24"><path d="M12 2c3 4 5 7 5 10a5 5 0 0 1-10 0c0-3 2-6 5-10z"/></svg>
-    Glow Up
+    Daily
   </button>
   <div class="nav-scan-spacer" aria-hidden="true"></div>
   <button class="nav" data-screen="history" onclick="openHistoryScreen()">
@@ -4069,20 +3985,6 @@ window.startScan = async function(){
   // pending and resumes after a successful purchase (see quizResumePendingScan).
   // No payment => no analysis.
   if (!hasUnlockedAccess()) {
-    // Never show the subscription screen after only one photo. Route legacy
-    // one-photo entry points into the required side-photo step first.
-    if (!selectedSideImageData && window.onbState) {
-      onbState.flow = onbState.flow || "scan";
-      onbState.gender = onbState.gender || (typeof currentGender === "function" ? currentGender() : "");
-      onbState.front = selectedImageData;
-      onbState.side = "";
-      onbState.which = "side";
-      onbState.pendingScan = false;
-      document.documentElement.classList.add("fm-quiz-active");
-      openScreen("capture");
-      try { onbRenderCapture(); } catch {}
-      return;
-    }
     if (window.onbState) onbState.pendingScan = true;
     quizShowPaywall();
     return;
@@ -6732,16 +6634,17 @@ function onbCaptureBack(){
 }
 
 function onbProceedToScan(){
-  // Both required photos are now collected. Do not analyze yet: the paywall is
-  // the required gate before any photo leaves the device for AI analysis.
+  // Leaving onboarding for the real scan/loading/result flow — restore normal chrome.
   document.documentElement.classList.remove("fm-quiz-active");
+  // Remember the scan came from the new capture flow so a failure returns here
+  // (retake) instead of the legacy upload screen.
   onbState.viaCapture = true;
-  onbState.pendingScan = true;
+  // The front photo is what the AI analyzes; the side photo is sent along for context.
   selectedImageData = onbState.front || selectedImageData;
   selectedSideImageData = onbState.side || "";
   try { if (typeof applySelectedPhoto === "function" && selectedImageData) applySelectedPhoto(selectedImageData); } catch {}
   const li = el("loadingImg"); if (li && selectedImageData) li.src = selectedImageData;
-  quizShowPaywall();
+  if (typeof window.startScan === "function") window.startScan();
 }
 
 // Animated "Uploading your data · NN%" line on the loading screen.
@@ -6909,23 +6812,15 @@ function quizPick(key, value, mode){
   quizRender();
 }
 
-function quizContinue(){
-  quizHaptic();
-  // Last quiz step must finish the quiz and open the loading/readiness flow.
-  // Previously it tried to go to QUIZ_STEPS[step+1], so the Continue button
-  // appeared to do nothing on the final commitment screen.
-  if (quizState.step >= QUIZ_STEPS.length - 1) {
-    quizFinishToAnalyze();
-    return;
-  }
-  quizGoTo(quizState.step + 1);
-}
+function quizContinue(){ quizHaptic(); quizGoTo(quizState.step + 1); }
 
 function quizFinishToAnalyze(){
   quizHaptic();
   // Set done flag now so a refresh mid-flow doesn't re-start the quiz.
   quizSetDone();
-  quizShowAnalyzeThenResult();
+  // Paywall-first funnel: after the quiz, show the subscription plans.
+  // Face scanning / AI analysis is only allowed after RevenueCat purchase unlock.
+  quizShowPaywall();
 }
 
 function quizGoalsLabel(){
