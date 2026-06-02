@@ -1,0 +1,16 @@
+# App shell: never cache so testers always get the latest build.
+/
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+/index.html
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+/js/*
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+# Heavy, content-stable assets: cache hard so the 13 MB MediaPipe wasm + model
+# and onboarding photos don't re-download on every launch.
+/assets/mediapipe/*
+  Cache-Control: public, max-age=31536000, immutable
+/assets/onboarding/*
+  Cache-Control: public, max-age=604800
+/assets/logo.png
+  Cache-Control: public, max-age=604800

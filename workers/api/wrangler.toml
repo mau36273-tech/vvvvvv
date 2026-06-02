@@ -1,0 +1,40 @@
+name = "facemax-api"
+main = "src/index.js"
+compatibility_date = "2026-05-15"
+
+# Apple bundle identifier; the worker uses this to validate StoreKit JWS
+# payloads on /api/apple-receipt-verify. Override via the dashboard if you
+# change the bundle ID.
+[vars]
+APPLE_BUNDLE_ID = "ai.facemax.app"
+
+# Premium subscription state (mirrors what RevenueCat / Lava webhooks set).
+[[kv_namespaces]]
+binding = "PREMIUM_KV"
+id = "c2d93ef4414440988ba881feb8c0a81b"
+
+# ---------------------------------------------------------------------------
+# Secrets (set via `wrangler secret put NAME` or the Cloudflare dashboard):
+#
+#   OPENROUTER_API_KEY     - OpenRouter API key (PRIMARY backend for every AI
+#                            flow: face report, face-check, food scan and the
+#                            skin/jawline plans). Pinned to
+#                            google/gemini-2.5-flash-lite via google-vertex/eu
+#                            at temperature 0 for deterministic scoring. The
+#                            native iOS app sends MediaPipe-derived numeric
+#                            features here, never raw user photos.
+#   OPENAI_API_KEY         - OpenAI ChatGPT API key (optional fallback; used
+#                            only if OPENROUTER_API_KEY is missing or the
+#                            OpenRouter call fails)
+#   GEMINI_API_KEY         - Google Gemini API key (legacy; no longer used by
+#                            the report flows, only reported by config-check)
+#   LAVA_API_KEY           - Lava.top API key (web checkout)
+#   LAVA_WEBHOOK_SECRET    - Lava webhook HMAC / Basic auth secret
+#   YOOKASSA_SECRET_KEY    - YooKassa secret (legacy, optional)
+#   APPLE_SHARED_SECRET    - StoreKit shared secret (optional)
+#   REVENUECAT_WEBHOOK_AUTH - Bearer token RevenueCat sends on webhooks
+#
+# Optional model overrides (set as plain vars, not secrets):
+#   OPENAI_REPORT_MODEL    - default "gpt-4o-mini" (face report, text only)
+#   OPENAI_VISION_MODEL    - default "gpt-4o-mini" (food scan, vision)
+# ---------------------------------------------------------------------------
