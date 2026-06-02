@@ -1153,6 +1153,15 @@ html.fm-native .qr-ring-num{font-feature-settings:'ss01','tnum','cv11';letter-sp
 #quiz .quiz-title,#quiz .quiz-sub,#quiz .quiz-option,#quiz .quiz-option-text b,#quiz .quiz-pill{color:#fff!important}
 #quiz .quiz-option-text span,#quiz .quiz-sub{color:rgba(255,255,255,.72)!important}
 
+
+/* Mobile/WebView quiz tap polish: iOS can keep :hover after a tap and the
+   selected card used to jump/scale, which made the highlight look misaligned. */
+#quiz .quiz-option,#quiz .quiz-pill{position:relative!important;transform:none!important}
+#quiz .quiz-option:hover,#quiz .quiz-option:active,#quiz .quiz-option.selected,#quiz .quiz-grid .quiz-option.selected,#quiz .quiz-pill:hover,#quiz .quiz-pill:active,#quiz .quiz-pill.selected{transform:none!important}
+#quiz .quiz-option:focus,#quiz .quiz-pill:focus,#quiz .btn:focus{outline:none!important}
+#quiz .quiz-option.selected{border-color:rgba(196,181,253,.95)!important;background:linear-gradient(135deg,rgba(167,139,250,.22),rgba(232,121,249,.10))!important;box-shadow:0 0 0 1px rgba(196,181,253,.28),0 12px 32px rgba(167,139,250,.18)!important}
+#quiz .quiz-option-tick{margin-left:auto!important}
+
 /* Quiz analyze: DePuff-style progress circles instead of a single spinner. */
 #quizAnalyze .quiz-shell{height:100dvh!important;min-height:0!important;justify-content:center!important;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))!important;overflow:hidden!important}
 .qa-ring{width:178px!important;height:178px!important;margin-bottom:28px!important;background:radial-gradient(circle at 50% 50%,rgba(167,139,250,.18),transparent 57%)!important;border:1px solid rgba(196,181,253,.20)!important;box-shadow:0 0 45px rgba(167,139,250,.20),inset 0 0 30px rgba(255,255,255,.04)!important;animation:none!important;display:grid!important;place-items:center!important}
@@ -6900,7 +6909,17 @@ function quizPick(key, value, mode){
   quizRender();
 }
 
-function quizContinue(){ quizHaptic(); quizGoTo(quizState.step + 1); }
+function quizContinue(){
+  quizHaptic();
+  // Last quiz step must finish the quiz and open the loading/readiness flow.
+  // Previously it tried to go to QUIZ_STEPS[step+1], so the Continue button
+  // appeared to do nothing on the final commitment screen.
+  if (quizState.step >= QUIZ_STEPS.length - 1) {
+    quizFinishToAnalyze();
+    return;
+  }
+  quizGoTo(quizState.step + 1);
+}
 
 function quizFinishToAnalyze(){
   quizHaptic();
