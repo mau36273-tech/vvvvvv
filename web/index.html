@@ -1,11 +1,6 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <meta name="build-version" content="v-fix-paywall-layout-20260602">
-  <!-- BUILD: v-fix-paywall-layout-20260602 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#100A14">
@@ -28,7 +23,6 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-f
    since iOS 13+ uses native momentum already and the old flag can re-enable
    the bounce on body when scrollEnabled is true on subviews. */
 html,body{overscroll-behavior-y:none}
-html:not(.fm-native){overflow-y:scroll}
 .app,.screen,.qz-screen,main,section{overscroll-behavior-y:none}
 /* On native iOS, paint a thin opaque "ceiling" + "floor" gradient pinned
    to the viewport so scrolled content visually fades out at the top edge
@@ -38,31 +32,23 @@ html:not(.fm-native){overflow-y:scroll}
 /* Gradient overlays removed: previously created dark bands at top and bottom
    that the user found visually distracting on iOS. Safe-area padding alone
    provides enough breathing room above the notch and below the home indicator. */
-/* On native iOS WKWebView, scrollEnabled:false (capacitor.config.json) disables
-   the outer UIScrollView (kills rubber-band). To make scrolling work, an inner
-   element needs to be both a fixed-height container AND an overflow scroller.
-   We pin html to viewport height and let body be the scrollable layer. Without
-   the explicit height cap, body would just grow to content size and there would
-   be nothing to scroll. */
-html.fm-native{height:100%;overflow:hidden}
-html.fm-native body{height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;align-items:flex-start}
+/* Native iOS WKWebView fix: keep Capacitor's native UIScrollView enabled.
+   The previous build disabled native scrolling and made body an artificial
+   scroll container, which caused broken height, double safe-area offsets and
+   jumpy bottom navigation in Appetize/iOS simulators. */
+html.fm-native{min-height:100%;overflow-x:hidden;overflow-y:auto}
+html.fm-native body{min-height:100%;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;align-items:flex-start}
 html.fm-native,html.fm-native body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','SF Pro',system-ui,sans-serif}
 html.fm-native h1,html.fm-native h2,html.fm-native .qp-title,html.fm-native .qa-title{letter-spacing:-0.038em}
 body{display:flex;justify-content:center}
 button,input{font-family:inherit;color:inherit}
-.app{width:min(100%,460px);min-height:100svh;position:relative;padding:calc(env(safe-area-inset-top,0px) + 6px) 18px calc(104px + env(safe-area-inset-bottom,0px));background:radial-gradient(70% 36% at 50% -10%,rgba(167,139,250,.22),transparent 65%),radial-gradient(80% 30% at 50% -4%,rgba(232,121,249,.14),transparent 70%),radial-gradient(60% 28% at 50% 4%,rgba(240,161,200,.08),transparent 75%),var(--bg)}
+.app{width:100%;max-width:460px;min-height:100dvh;position:relative;padding:calc(env(safe-area-inset-top,0px) + 6px) 18px calc(104px + env(safe-area-inset-bottom,0px));background:radial-gradient(70% 36% at 50% -10%,rgba(167,139,250,.22),transparent 65%),radial-gradient(80% 30% at 50% -4%,rgba(232,121,249,.14),transparent 70%),radial-gradient(60% 28% at 50% 4%,rgba(240,161,200,.08),transparent 75%),var(--bg)}
 html.fm-native .app{padding-top:calc(env(safe-area-inset-top,0px) + 4px);padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
-/* Appetize/iOS layout fix: keep chrome anchored to the actual viewport.
-   Body scrolling made quiz CTA/nav drift; screens own their scroll instead. */
-html.fm-native body{height:100dvh;overflow:hidden}
-html.fm-native .app{height:100dvh;min-height:100dvh;overflow:hidden;padding-bottom:calc(92px + max(0px, env(safe-area-inset-bottom,0px) - 18px))}
-html.fm-native .screen.active:not(#quiz):not(#genderSelect):not(#capture):not(#quizPaywall):not(#quizResult){height:calc(100dvh - 104px - max(0px, env(safe-area-inset-bottom,0px) - 18px));overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px}
-
+@supports not (height:100dvh){.app{min-height:100svh}}
 html.fm-native body{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 html.fm-native a[target="_blank"]{cursor:pointer}
 .screen{display:none}
-.screen.active{display:block;animation:fmFadeIn .25s ease}
-@keyframes fmFadeIn{from{opacity:0}to{opacity:1}}
+.screen.active{display:block;animation:fmSlideIn .32s cubic-bezier(.32,.72,.36,1)}
 @keyframes fmSlideIn{from{opacity:0;transform:translate3d(14px,0,0)}to{opacity:1;transform:none}}
 @keyframes fmFadeUp{from{opacity:0;transform:translate3d(0,10px,0)}to{opacity:1;transform:none}}
 #result.screen.active{animation-name:fmFadeUp}
@@ -158,16 +144,16 @@ h3{margin:0 0 12px;color:var(--muted);text-transform:uppercase;font-size:11px;fo
 .scan-budget{text-align:center;margin:10px 0 0;font-size:12px;font-weight:600;letter-spacing:0.02em;color:var(--muted)}
 /* ---------- Home v2 (DePuff-style dawn home) ---------- */
 .home-v2{display:flex;flex-direction:column;align-items:center;gap:10px;padding:2px 2px 0}
-.orb-wrap{position:relative;width:200px;height:200px;display:grid;place-items:center;margin:0 0 2px;pointer-events:none;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.orb-wrap{position:relative;width:200px;height:200px;display:grid;place-items:center;margin:0 0 2px}
 .orb-ring{width:170px!important;height:170px!important}
 .orb-stat-num{font-size:46px!important}
 .orb-glow{position:absolute;inset:-18px;border-radius:50%;background:radial-gradient(circle at 50% 38%,rgba(167,139,250,.42),rgba(196,181,253,.28) 40%,rgba(232,121,249,.16) 70%,transparent 80%);filter:blur(14px);animation:orbBreath 5.2s ease-in-out infinite;pointer-events:none}
 @keyframes orbBreath{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.06);opacity:1}}
-.orb-ring{position:relative;width:200px;height:200px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,rgba(167,139,250,.10),rgba(255,255,255,.02) 65%);border:1px solid rgba(196,181,253,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 14px 50px rgba(167,139,250,.24);pointer-events:none}
+.orb-ring{position:relative;width:200px;height:200px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,rgba(167,139,250,.10),rgba(255,255,255,.02) 65%);border:1px solid rgba(196,181,253,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 14px 50px rgba(167,139,250,.24)}
 .orb-mesh{position:absolute;inset:0;width:100%;height:100%;animation:orbSpin 28s linear infinite;pointer-events:none}
 @keyframes orbSpin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.orb-glow,.orb-mesh{animation:none}}
-.orb-stat{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;pointer-events:none}
+.orb-stat{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
 .orb-stat-num{font-size:54px;font-weight:800;letter-spacing:-0.05em;line-height:1;font-variant-numeric:tabular-nums;color:#fff;padding:0 .04em;text-shadow:0 2px 12px rgba(0,0,0,.45),0 0 22px rgba(167,139,250,.55)}
 .orb-stat-lbl{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-top:6px}
 .home-title{font-size:22px;line-height:1.12;letter-spacing:-0.035em;margin:0 0 2px;font-weight:800;text-align:center;max-width:18ch}
@@ -207,8 +193,8 @@ h3{margin:0 0 12px;color:var(--muted);text-transform:uppercase;font-size:11px;fo
 .photo-frame img{width:100%;max-height:480px;display:block;object-fit:contain;background:#14091A}
 .face-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5}
 .scan-grid{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(167,139,250,.10) 1px,transparent 1px),linear-gradient(rgba(167,139,250,.08) 1px,transparent 1px);background-size:28px 28px;opacity:.4;z-index:2;mix-blend-mode:screen}
-.scan-beam{position:absolute;left:0;right:0;top:-34%;height:34%;z-index:3;pointer-events:none;background:linear-gradient(to bottom,transparent,rgba(167,139,250,.45),rgba(196,181,253,.22),transparent);box-shadow:0 0 18px rgba(167,139,250,.38);animation:scanBeam 2.05s cubic-bezier(.42,0,.22,1) infinite;mix-blend-mode:screen}
-@keyframes scanBeam{0%{top:-34%;opacity:0}10%{opacity:1}88%{opacity:1}100%{top:100%;opacity:0}}
+.scan-beam{position:absolute;left:0;right:0;top:-60px;height:60px;z-index:3;pointer-events:none;background:linear-gradient(to bottom,transparent,rgba(167,139,250,.65),rgba(196,181,253,.30),transparent);box-shadow:0 0 24px rgba(167,139,250,.55);animation:scanBeam 1.6s linear infinite;mix-blend-mode:screen}
+@keyframes scanBeam{to{transform:translateY(640px)}}
 .metric-row{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--surface-2);border-radius:12px;border:1px solid var(--line);margin-bottom:8px}
 .metric-row:last-child{margin-bottom:0}
 .metric-ico{width:32px;height:32px;border-radius:9px;flex-shrink:0;background:var(--p-dim);display:grid;place-items:center;color:var(--p-2)}
@@ -218,8 +204,6 @@ h3{margin:0 0 12px;color:var(--muted);text-transform:uppercase;font-size:11px;fo
 .metric-bar{height:6px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}
 .metric-bar-fill{height:100%;border-radius:999px;background:var(--bar-bg,linear-gradient(90deg,#A78BFA,#E879F9));box-shadow:0 0 8px var(--bar-glow,rgba(167,139,250,.30));transition:width .9s cubic-bezier(.34,1.2,.5,1),background .25s ease,box-shadow .25s ease}
 .metric-val{font-size:18px;font-weight:800;letter-spacing:-0.025em;font-variant-numeric:tabular-nums;flex-shrink:0;width:40px;text-align:right}
-.metric-why{font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:7px;font-weight:500}
-.metric-row:has(.metric-why){align-items:flex-start}
 .locked{position:relative}
 .locked .lock-blur{filter:blur(7px) brightness(.7) saturate(.5);pointer-events:none;user-select:none}
 .lock-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(50% 50% at 50% 50%,rgba(10,10,12,.50),rgba(10,10,12,.85));z-index:10;border-radius:inherit;cursor:pointer;transition:background .2s}
@@ -286,18 +270,6 @@ h3{margin:0 0 12px;color:var(--muted);text-transform:uppercase;font-size:11px;fo
 .step-txt{font-size:13px;color:var(--muted);transition:color .3s;font-weight:500}
 .step-txt.done{color:var(--text)}
 .step-txt.active{color:var(--p-2)}
-/* ===== Loading screen: 6 long animated metric loading bars ===== */
-#loading .scan-photo{max-width:188px;margin:0 auto 18px}
-#loading .scan-photo img{max-height:230px}
-.scan-metrics{display:flex;flex-direction:column;gap:14px;margin-top:4px}
-.scan-metric{position:relative}
-.scan-metric-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:7px}
-.scan-metric-name{font-size:13.5px;font-weight:700;color:var(--text);letter-spacing:-.01em}
-.scan-metric-pct{font-size:12.5px;font-weight:700;color:var(--p-2);font-variant-numeric:tabular-nums;letter-spacing:.02em}
-.scan-metric-track{position:relative;height:9px;border-radius:999px;background:rgba(255,255,255,.07);box-shadow:inset 0 1px 2px rgba(0,0,0,.3);overflow:hidden}
-.scan-metric-fill{position:relative;height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#8B5CF6,#A78BFA,#C4B5FD);box-shadow:0 0 12px rgba(167,139,250,.55);transition:width .35s cubic-bezier(.34,1,.5,1)}
-.scan-metric-fill::after{content:"";position:absolute;inset:0;border-radius:999px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);background-size:160px 100%;background-repeat:no-repeat;animation:scanSheen 1.15s linear infinite}
-@keyframes scanSheen{0%{background-position:-120px 0}100%{background-position:calc(100% + 120px) 0}}
 .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin:24px 4px 10px}
 .sec-hdr h3{margin:0}
 .sec-hdr a{font-size:12px;color:var(--p-2);font-weight:600;cursor:pointer}
@@ -337,7 +309,7 @@ h3{margin:0 0 12px;color:var(--muted);text-transform:uppercase;font-size:11px;fo
 .notif-toggle-dot{position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
 .notif-toggle input:checked + .notif-toggle-track{background:linear-gradient(135deg,#A78BFA,#E879F9);border-color:transparent}
 .notif-toggle input:checked + .notif-toggle-track .notif-toggle-dot{transform:translateX(18px)}
-.profile-avatar{width:78px;height:78px;border-radius:50%;background:linear-gradient(135deg,#A78BFA,#E879F9);background-size:cover;background-position:center;display:grid;place-items:center;margin:0 auto 12px;border:2px solid rgba(255,255,255,.14);color:#fff;cursor:pointer;position:relative;overflow:visible;-webkit-tap-highlight-color:transparent;transition:transform .15s ease}
+.profile-avatar{width:78px;height:78px;border-radius:50%;background:linear-gradient(135deg,#A78BFA,#E879F9);background-size:cover;background-position:center;display:grid;place-items:center;margin:0 auto 12px;border:2px solid rgba(255,255,255,.14);color:#fff;cursor:pointer;position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:transform .15s ease}
 .profile-avatar:active{transform:scale(.96)}
 .profile-avatar.has-image svg{display:none}
 .profile-avatar svg{width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -359,9 +331,9 @@ h3{margin:0 0 12px;color:var(--muted);text-transform:uppercase;font-size:11px;fo
  * enough bottom padding so content isn't covered. */
 .bottom{position:fixed;left:50%;bottom:8px;transform:translateX(-50%);width:min(calc(100vw - 16px),438px);background:rgba(13,13,17,.86);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border-radius:20px;padding:5px;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;z-index:50;box-shadow:0 18px 50px rgba(0,0,0,.45),0 0 0 .5px rgba(255,255,255,.04);will-change:auto}
 @supports (padding: env(safe-area-inset-bottom)){
-  .bottom{bottom:max(6px,calc(env(safe-area-inset-bottom,0px) - 20px))}
+  .bottom{bottom:calc(8px + env(safe-area-inset-bottom,0px))}
 }
-html.fm-native .bottom{bottom:max(6px,calc(env(safe-area-inset-bottom,0px) - 20px))}
+html.fm-native .bottom{bottom:calc(8px + env(safe-area-inset-bottom,0px))}
 .nav{height:50px;border:0;background:transparent;color:var(--dim);border-radius:13px;font-weight:600;font-size:10.5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:background .22s cubic-bezier(.34,1.3,.4,1),color .22s ease;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .nav.active{background:rgba(167,139,250,.16);color:var(--p-2)}
 .nav.active svg{transform:translateY(-1px) scale(1.06)}
@@ -383,67 +355,53 @@ html.fm-native .bottom{bottom:max(6px,calc(env(safe-area-inset-bottom,0px) - 20p
   box-shadow:0 8px 22px rgba(167,139,250,.45),0 0 0 1px rgba(255,255,255,.08),inset 0 1px 0 rgba(255,255,255,.18);
   display:flex;align-items:center;justify-content:center;cursor:pointer;
   -webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;
-  transition:box-shadow .25s ease;z-index:2}
-.nav-scan-fab:active,.nav-scan-fab.is-pressed{transform:translateX(-50%)!important}
-.bottom .nav,.bottom .nav:active,.bottom .nav.is-pressed{transform:none!important;transition:background .18s,color .22s,opacity .18s!important}
-.bottom .nav:active svg{transform:none!important}
+  transition:transform .18s cubic-bezier(.34,1.5,.4,1),box-shadow .25s ease;z-index:2}
+.nav-scan-fab:active{transform:translateX(-50%) scale(.92)}
 .nav-scan-fab svg{width:24px;height:24px;stroke:#ffffff;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 0 rgba(0,0,0,.18))}
 
 /* ===== v2: compact result screen (single-screen layout, no scroll) ===== */
-.fm-result-v2{padding-top:14px}
-.fm-result-v2 .result-avatar{display:flex;justify-content:center;margin-bottom:8px}
-.fm-result-v2 .result-avatar-ring{position:relative;width:110px;height:110px;border-radius:50%;overflow:hidden;
-  background:#1A1320;border:3px solid rgba(196,181,253,.95);
-  box-shadow:0 16px 42px rgba(167,139,250,.6),0 0 28px rgba(196,181,253,.6),0 0 0 1px rgba(255,255,255,.2)}
-/* Big centered score number */
-.fm-result-v2 .result-score-big{display:flex;align-items:baseline;justify-content:center;gap:2px;margin:0 0 6px}
-.fm-result-v2 .result-score-num{font-size:42px;font-weight:800;letter-spacing:-.04em;color:#fff;font-variant-numeric:tabular-nums;line-height:1;text-shadow:0 2px 16px rgba(167,139,250,.4)}
-.fm-result-v2 .result-score-of{font-size:18px;font-weight:600;color:rgba(255,255,255,.4);letter-spacing:-.01em}
+.fm-result-v2{padding-top:18px}
+.fm-result-v2 .result-avatar{display:flex;justify-content:center;margin-bottom:10px}
+.fm-result-v2 .result-avatar-ring{position:relative;width:122px;height:122px;border-radius:50%;overflow:hidden;
+  background:#1A1320;border:3px solid rgba(167,139,250,.45);
+  box-shadow:0 14px 38px rgba(167,139,250,.35),0 0 0 1px rgba(255,255,255,.06)}
 .fm-result-v2 .result-avatar-ring img{width:100%;height:100%;object-fit:cover;display:block}
 .fm-result-v2 .result-avatar-ring canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .fm-result-v2 .arch-badge-v2{display:flex;align-items:center;justify-content:center;gap:8px;
   margin:0 auto 12px;padding:6px 14px;border-radius:999px;width:fit-content;
   background:linear-gradient(135deg,rgba(167,139,250,.18),rgba(232,121,249,.14));
   border:1px solid rgba(167,139,250,.38);color:#fff;font-weight:700;font-size:13px;letter-spacing:.01em}
-#result .arch-badge-v2{gap:10px;margin:0 auto 12px;padding:10px 24px;
-  background:linear-gradient(135deg,#8B5CF6 0%,#A78BFA 30%,#C084FC 55%,#E879F9 80%,#7C3AED 100%);
-  border:2px solid rgba(196,181,253,.55);border-radius:999px;
-  box-shadow:0 6px 28px rgba(139,92,246,.55),0 0 60px rgba(167,139,250,.25),inset 0 1px 0 rgba(255,255,255,.18);
-  font-weight:800;font-size:16px;letter-spacing:.06em;text-transform:uppercase;
-  text-shadow:0 1px 10px rgba(139,92,246,.7);color:#fff}
 .fm-result-v2 .arch-badge-v2.is-loading{opacity:.55}
 .fm-result-v2 .arch-badge-v2 .arch-psl{font-size:11.5px;font-weight:600;color:rgba(255,255,255,.72);padding-left:8px;border-left:1px solid rgba(255,255,255,.18)}
-#result .arch-badge-v2 .arch-psl{font-size:13.5px;font-weight:700;color:rgba(255,255,255,.95);padding-left:11px;border-left:1px solid rgba(255,255,255,.35);letter-spacing:.03em}
-.fm-result-v2 .score-bar-wrap{margin:0 4px 8px;position:relative}
-.fm-result-v2 .score-bar-line{position:relative;height:10px;border-radius:999px;
-  background:linear-gradient(90deg,#ef4444 0%,#fb923c 28%,#fbbf24 52%,#a3e635 76%,#4ade80 100%);
+.fm-result-v2 .score-bar-wrap{margin:6px 4px 14px}
+.fm-result-v2 .score-bar-line{position:relative;height:14px;border-radius:999px;
+  background:linear-gradient(90deg,#ef4444 0%,#fb923c 32%,#fbbf24 50%,#a3e635 70%,#4ade80 100%);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);overflow:visible}
-#result .score-bar-line{height:10px;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);overflow:visible}
-#result .score-bar-line::before{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--bar-w,0%);background:linear-gradient(90deg,#ef4444 0%,#fb923c 28%,#fbbf24 52%,#a3e635 76%,#4ade80 100%);border-radius:999px;transition:width 1.4s cubic-bezier(.34,1.2,.5,1);box-shadow:0 0 12px rgba(167,139,250,.3);pointer-events:none}
 .fm-result-v2 .score-bar-marker{position:absolute;top:50%;left:0%;transform:translate(-50%,-50%);
   display:flex;flex-direction:column;align-items:center;transition:left 1.2s cubic-bezier(.34,1.2,.5,1)}
-.fm-result-v2 .score-bar-marker-pin{width:18px;height:18px;border-radius:50%;background:#fff;
-  border:3px solid #100A14;box-shadow:0 4px 12px rgba(0,0,0,.45)}
-#result .score-bar-marker-pin{width:20px;height:20px;background:linear-gradient(135deg,#fff,#e9e3ff);border:3px solid rgba(16,10,20,.95);box-shadow:0 4px 12px rgba(0,0,0,.5),0 0 0 3px rgba(167,139,250,.2)}
-.fm-result-v2 .score-bar-marker-num{display:none}
-.fm-result-v2 .score-bar-scale{display:none}
-.fm-result-v2 .score-bar-ticks{display:flex;justify-content:space-between;margin-top:6px;padding:0 2px}
-.fm-result-v2 .score-bar-tick{position:static !important;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.02em;font-variant-numeric:tabular-nums}
-/* --- metric progress bars (premium style) --- */
-.fm-result-v2 .metric-list{display:flex;flex-direction:column;gap:10px;margin-top:14px}
-.fm-result-v2 .metric-row{display:block;align-items:initial;gap:0;margin-bottom:0;background:var(--surface-2);border:1px solid var(--line);border-radius:16px;padding:16px 18px 14px;position:relative;overflow:hidden}
-.fm-result-v2 .metric-row::before{content:"";position:absolute;inset:0;border-radius:16px;background:linear-gradient(135deg,rgba(167,139,250,.04),transparent 60%);pointer-events:none}
-.fm-result-v2 .metric-row-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.fm-result-v2 .metric-row-label{font-size:15px;font-weight:700;color:#fff;letter-spacing:-.01em}
-.fm-result-v2 .metric-row-val{font-size:18px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-.02em;min-width:28px;text-align:right}
-.fm-result-v2 .metric-row-bar{position:relative;height:8px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.25)}
-.fm-result-v2 .metric-row-fill{height:100%;width:0%;border-radius:999px;transition:width 1.2s cubic-bezier(.34,1.2,.5,1);background:linear-gradient(90deg,#A78BFA,#C084FC);box-shadow:0 0 10px rgba(167,139,250,.4)}
-.fm-result-v2 .metric-row-sub{font-size:11.5px;color:var(--muted);margin-top:7px;font-weight:600;letter-spacing:.01em}
-/* legacy compat */
-.fm-result-v2 .metric-grid{display:none}
-.fm-result-v2 .metric-tile-ring{display:none}
+.fm-result-v2 .score-bar-marker-pin{width:22px;height:22px;border-radius:50%;background:#fff;
+  border:3px solid #100A14;box-shadow:0 6px 14px rgba(0,0,0,.45)}
+.fm-result-v2 .score-bar-marker-num{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
+  background:#fff;color:#100A14;font-size:14px;font-weight:800;letter-spacing:-.01em;
+  padding:4px 10px;border-radius:10px;white-space:nowrap;
+  box-shadow:0 8px 20px rgba(0,0,0,.45)}
+.fm-result-v2 .score-bar-marker-num::after{content:"";position:absolute;left:50%;top:100%;transform:translateX(-50%);
+  border:6px solid transparent;border-top-color:#fff;width:0;height:0}
+.fm-result-v2 .score-bar-scale{display:flex;justify-content:space-between;margin-top:10px;
+  font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+.fm-result-v2 .metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:6px}
+.fm-result-v2 .metric-tile{position:relative;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:14px;padding:11px 13px;display:flex;align-items:center;gap:11px;overflow:hidden}
+.fm-result-v2 .metric-tile-ring{position:relative;width:44px;height:44px;flex-shrink:0}
+.fm-result-v2 .metric-tile-ring svg{width:44px;height:44px;transform:rotate(-90deg)}
+.fm-result-v2 .metric-tile-ring svg circle{fill:none;stroke-width:3.5;stroke-linecap:round}
+.fm-result-v2 .metric-tile-ring svg circle.track{stroke:rgba(255,255,255,.07)}
+.fm-result-v2 .metric-tile-ring svg circle.fill{stroke:var(--ring-c,#A78BFA);stroke-dasharray:94.25;stroke-dashoffset:94.25;transition:stroke-dashoffset 1s cubic-bezier(.34,1.2,.5,1),stroke .25s ease}
+.fm-result-v2 .metric-tile-ring .metric-tile-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.fm-result-v2 .metric-tile-body{flex:1;min-width:0}
+.fm-result-v2 .metric-tile-label{font-size:12.5px;font-weight:700;color:rgba(255,255,255,.92);line-height:1.15}
+.fm-result-v2 .metric-tile-sub{font-size:10.5px;color:var(--muted);margin-top:2px;font-weight:600}
 .fm-result-v2 .result-cta{display:flex;flex-direction:column;gap:8px;margin-top:14px}
-#result .result-cta{display:none !important}
 .fm-result-v2 .result-cta .btn{margin:0}
 .fm-result-v2 .result-cta .btn-text{background:transparent;border:0;color:var(--muted);font-size:12.5px;padding:8px;cursor:pointer}
 
@@ -641,19 +599,8 @@ html.fm-native .bottom{bottom:max(6px,calc(env(safe-area-inset-bottom,0px) - 20p
 .foodscan-upload .fs-ico svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .foodscan-upload b{font-size:15px;font-weight:700;display:block;margin-bottom:4px}
 .foodscan-upload p{font-size:12px;color:var(--muted);margin:0;line-height:1.5}
-.foodscan-preview{width:100%;aspect-ratio:1;border-radius:16px;overflow:hidden;background:var(--surface-3);display:grid;place-items:center;margin:0 0 10px;position:relative}
+.foodscan-preview{width:100%;aspect-ratio:1;border-radius:16px;overflow:hidden;background:var(--surface-3);display:grid;place-items:center;margin:0 0 10px}
 .foodscan-preview img{width:100%;height:100%;object-fit:cover;display:block}
-.fs-scan-grid{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(167,139,250,.10) 1px,transparent 1px),linear-gradient(rgba(167,139,250,.08) 1px,transparent 1px);background-size:26px 26px;opacity:0;z-index:2;mix-blend-mode:screen;transition:opacity .3s}
-.fs-scan-beam{position:absolute;left:0;right:0;top:0;height:64px;z-index:3;pointer-events:none;background:linear-gradient(to bottom,transparent,rgba(167,139,250,.7),rgba(196,181,253,.32),transparent);box-shadow:0 0 26px rgba(167,139,250,.6);mix-blend-mode:screen;opacity:0;transform:translateY(-64px)}
-.foodscan-preview.scanning .fs-scan-grid{opacity:.55}
-.foodscan-preview.scanning .fs-scan-beam{opacity:1;animation:fsScanBeam 1.5s linear infinite}
-.foodscan-preview.scanning img{filter:brightness(.82) saturate(1.08)}
-@keyframes fsScanBeam{0%{transform:translateY(-64px)}100%{transform:translateY(460px)}}
-.fs-scan-cap{position:absolute;left:0;right:0;bottom:12px;text-align:center;z-index:4;color:#fff;font-size:12.5px;font-weight:700;letter-spacing:-0.01em;text-shadow:0 1px 8px rgba(0,0,0,.7)}
-.fs-scan-cap i{display:inline-block;width:5px;height:5px;border-radius:50%;background:#fff;margin:0 1px 1px;animation:dot 1.2s infinite}
-.fs-scan-cap i:nth-child(2){animation-delay:.15s}
-.fs-scan-cap i:nth-child(3){animation-delay:.3s}
-#foodScanResult:not(.hidden){animation:fmFadeUp .45s ease both}
 .live-camera{position:fixed;inset:0;background:#000;z-index:9999;display:flex;flex-direction:column}
 .live-camera video{flex:1;width:100%;height:100%;object-fit:cover;background:#000}
 .live-camera-bar{position:absolute;bottom:0;left:0;right:0;padding:18px 24px 28px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to top,rgba(0,0,0,.75),rgba(0,0,0,0))}
@@ -855,14 +802,7 @@ html.fm-quiz-active .app{padding-top:calc(env(safe-area-inset-top,0px) + 10px);p
 html.fm-native.fm-quiz-active .app{padding-top:calc(env(safe-area-inset-top,0px) + 12px)}
 #quiz.screen{animation:fadeIn .32s cubic-bezier(.4,0,.2,1)}
 .quiz-shell{display:flex;flex-direction:column;min-height:calc(100svh - 80px);position:relative}
-/* The quiz itself is locked to one screen — every step fits without scrolling.
-   Other screens that reuse .quiz-shell (gender, capture, result) keep min-height. */
-#quiz .quiz-shell{height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 24px);min-height:0;overflow:hidden}
-html.fm-quiz-active body{overflow:hidden!important;height:100dvh;position:fixed;width:100%;top:0;left:0}
-html.fm-quiz-active .app{height:100dvh;min-height:100dvh;overflow:hidden;padding-bottom:max(12px,env(safe-area-inset-bottom,0px))}
-#quiz.screen.active{height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 18px);overflow:hidden}
-#quiz .quiz-body{height:100%;overflow:hidden}
-.quiz-top{display:flex;align-items:center;gap:14px;margin:0 2px clamp(14px,2.6vh,24px);flex-shrink:0}
+.quiz-top{display:flex;align-items:center;gap:14px;margin:0 2px 26px}
 .quiz-back{background:none;border:0;color:var(--muted);font-size:28px;font-weight:300;width:30px;height:30px;cursor:pointer;line-height:1;padding:0;transition:color .15s}
 .quiz-back:hover{color:var(--text)}
 .quiz-progress{flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;position:relative}
@@ -874,50 +814,45 @@ html.fm-quiz-active .app{height:100dvh;min-height:100dvh;overflow:hidden;padding
 .qp-free-cta:hover,.qp-free-cta:active{background:rgba(255,255,255,.04);border-color:var(--p);color:#fff}
 .qp-free-cta svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-.quiz-body{flex:1;min-height:0;display:flex;flex-direction:column;animation:quizSlide .42s cubic-bezier(.4,0,.2,1)}
+.quiz-body{flex:1;display:flex;flex-direction:column;animation:quizSlide .42s cubic-bezier(.4,0,.2,1)}
 @keyframes quizSlide{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
-.quiz-emoji{font-size:clamp(46px,9vh,68px);line-height:1;margin:clamp(2px,1vh,6px) 0 clamp(14px,2.6vh,22px);text-align:center;animation:quizPop .55s cubic-bezier(.34,1.56,.64,1)}
+.quiz-emoji{font-size:68px;line-height:1;margin:6px 0 22px;text-align:center;animation:quizPop .55s cubic-bezier(.34,1.56,.64,1)}
 @keyframes quizPop{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
-.quiz-eyebrow{display:inline-block;padding:5px 11px;background:rgba(167,139,250,.13);border:1px solid rgba(167,139,250,.32);color:var(--p-2);border-radius:999px;font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;margin:0 0 clamp(8px,1.6vh,12px);align-self:flex-start;flex-shrink:0}
-.quiz-title{font-size:clamp(23px,6.2vw,31px);line-height:1.12;letter-spacing:-0.036em;font-weight:800;margin:0 0 clamp(7px,1.4vh,12px);flex-shrink:0}
-.quiz-sub{color:var(--muted);font-size:clamp(13.5px,3.9vw,15.5px);line-height:1.5;margin:0 0 clamp(12px,2.6vh,24px);flex-shrink:0}
+.quiz-eyebrow{display:inline-block;padding:5px 11px;background:rgba(167,139,250,.13);border:1px solid rgba(167,139,250,.32);color:var(--p-2);border-radius:999px;font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;margin:0 0 12px;align-self:flex-start}
+.quiz-title{font-size:30px;line-height:1.14;letter-spacing:-0.036em;font-weight:800;margin:0 0 12px}
+.quiz-sub{color:var(--muted);font-size:15.5px;line-height:1.55;margin:0 0 26px}
 .quiz-sub b{color:var(--text);font-weight:700}
 
-/* Options sit just under the title; the leftover space drops below them so the
-   Continue button stays pinned at the bottom. Cards keep a consistent height
-   across every step; when there are too many to fit, the list scrolls while
-   the Continue button stays pinned. */
-.quiz-options{flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:clamp(8px,1.5vh,12px);margin-bottom:clamp(10px,2vh,16px);justify-content:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y}
-.quiz-option{flex:0 0 auto;height:clamp(52px,7.6vh,68px);display:flex;align-items:center;gap:14px;padding:0 16px;background:var(--surface);border:1.5px solid var(--line-2);border-radius:16px;color:var(--text);font-size:15px;font-weight:600;letter-spacing:-0.012em;cursor:pointer;transition:transform .14s cubic-bezier(.3,1.6,.6,1),background .18s,border-color .18s,box-shadow .18s;text-align:left;width:100%}
+.quiz-options{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.quiz-option{display:flex;align-items:center;gap:14px;padding:16px 16px;background:var(--surface);border:1.5px solid var(--line-2);border-radius:14px;color:var(--text);font-size:15px;font-weight:600;letter-spacing:-0.012em;cursor:pointer;transition:all .18s cubic-bezier(.4,0,.2,1);text-align:left;width:100%}
 .quiz-option:hover{background:var(--surface-2);border-color:var(--line-3);transform:translateY(-1px)}
 .quiz-option:active{transform:scale(.985)}
-.quiz-option.selected{background:rgba(167,139,250,.12);border-color:var(--p);box-shadow:0 0 0 3px rgba(167,139,250,.22),0 8px 26px rgba(232,121,249,.22)}
+.quiz-option.selected{background:rgba(167,139,250,.10);border-color:var(--p);box-shadow:0 0 0 3px rgba(167,139,250,.18),0 6px 24px rgba(232,121,249,.18)}
 .quiz-option.selected .quiz-option-tick{opacity:1;transform:scale(1)}
-.quiz-option-emoji{font-size:clamp(22px,5.6vw,28px);line-height:1;flex-shrink:0}
+.quiz-option-emoji{font-size:24px;line-height:1;flex-shrink:0}
 .quiz-option-text{flex:1;min-width:0}
-.quiz-option-text b{display:block;font-size:clamp(14.5px,4vw,16px);font-weight:700;letter-spacing:-0.014em}
-.quiz-option-text span{display:block;font-size:clamp(11.5px,3.2vw,12.5px);color:var(--muted);margin-top:2px;font-weight:500;line-height:1.4}
-.quiz-option-tick{width:24px;height:24px;border-radius:50%;background:var(--p);display:grid;place-items:center;opacity:0;transform:scale(.4);transition:all .22s cubic-bezier(.34,1.56,.64,1);flex-shrink:0}
-.quiz-option-tick svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.quiz-option-text b{display:block;font-size:15px;font-weight:700;letter-spacing:-0.014em}
+.quiz-option-text span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px;font-weight:500;line-height:1.45}
+.quiz-option-tick{width:22px;height:22px;border-radius:50%;background:var(--p);display:grid;place-items:center;opacity:0;transform:scale(.4);transition:all .22s cubic-bezier(.34,1.56,.64,1);flex-shrink:0}
+.quiz-option-tick svg{width:13px;height:13px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 
 /* Grid options for emoji moods */
-.quiz-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:0 0 clamp(10px,2vh,16px);flex:0 0 auto;align-content:start}
-.quiz-grid .quiz-option{flex:0 0 auto;max-height:none;flex-direction:column;justify-content:center;gap:8px;padding:clamp(14px,2.6vh,20px) 6px;text-align:center}
-.quiz-grid .quiz-option-emoji{font-size:clamp(30px,8vw,38px)}
-.quiz-grid .quiz-option-text b{font-size:11.5px;letter-spacing:-0.005em;line-height:1.2;white-space:nowrap}
+.quiz-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px}
+.quiz-grid .quiz-option{flex-direction:column;gap:6px;padding:14px 6px;text-align:center}
+.quiz-grid .quiz-option-emoji{font-size:30px}
+.quiz-grid .quiz-option-text b{font-size:11px;letter-spacing:-0.005em;line-height:1.2}
 .quiz-grid .quiz-option-text span{display:none}
 .quiz-grid .quiz-option-tick{display:none}
 .quiz-grid .quiz-option.selected{transform:translateY(-2px) scale(1.02)}
 
 /* Pill options for age etc */
-.quiz-pills{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:clamp(10px,2vh,16px);flex:1 1 0;min-height:0;align-content:flex-start}
-.quiz-pill{padding:clamp(14px,3vh,20px) 18px;background:var(--surface);border:1.5px solid var(--line-2);border-radius:16px;color:var(--text);font-size:clamp(14px,4vw,16px);font-weight:700;cursor:pointer;transition:transform .14s cubic-bezier(.3,1.6,.6,1),background .18s,border-color .18s,box-shadow .18s;flex:1 1 28%;min-width:80px;text-align:center}
-.quiz-pill:hover{background:var(--surface-2);border-color:var(--line-3);transform:translateY(-1px)}
-.quiz-pill:active{transform:scale(.985)}
-.quiz-pill.selected{background:rgba(167,139,250,.12);border-color:var(--p);color:var(--p-2);box-shadow:0 0 0 3px rgba(167,139,250,.22),0 8px 26px rgba(232,121,249,.22)}
+.quiz-pills{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+.quiz-pill{padding:13px 18px;background:var(--surface);border:1.5px solid var(--line-2);border-radius:999px;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;transition:all .18s;flex:1;min-width:80px;text-align:center}
+.quiz-pill:hover{background:var(--surface-2);border-color:var(--line-3)}
+.quiz-pill.selected{background:rgba(167,139,250,.12);border-color:var(--p);color:var(--p-2);box-shadow:0 0 0 3px rgba(167,139,250,.18)}
 
-.quiz-cta{padding:clamp(8px,1.6vh,16px) 0 calc(8px + env(safe-area-inset-bottom,0px));margin-top:auto;flex-shrink:0;position:sticky;bottom:0;z-index:3;background:linear-gradient(to top,var(--bg) 60%,rgba(16,10,20,.85) 85%,rgba(16,10,20,0))}
-.quiz-cta .btn{height:clamp(50px,7.2vh,56px);font-size:16px}
+.quiz-cta{position:sticky;bottom:0;padding:18px 0 8px;background:linear-gradient(180deg,transparent,var(--bg) 30%);margin-top:auto}
+.quiz-cta .btn{height:56px;font-size:16px}
 .quiz-cta-note{text-align:center;font-size:11.5px;color:var(--dim);margin:10px 0 0;letter-spacing:0.01em}
 .quiz-legal-note{text-align:center;font-size:11px;color:var(--muted);line-height:1.5;margin:14px auto 0;letter-spacing:0.005em;max-width:340px}
 .quiz-legal-note a{color:var(--p-2);text-decoration:underline;text-decoration-color:rgba(167,139,250,.4);text-underline-offset:2px}
@@ -986,26 +921,20 @@ html.fm-quiz-active .app{height:100dvh;min-height:100dvh;overflow:hidden;padding
 
 /* ===== Quiz Result — Glow-Up Readiness score reveal (DePuff-style, App-Store-safe) ===== */
 #quizResult.screen{padding-top:8px;position:relative}
-#quizResult .quiz-shell{padding-top:0;align-items:stretch;padding-bottom:118px}
-/* Scan my face stays pinned at the bottom of the viewport; the score card
-   scrolls behind it. The gradient fades the content into the bar. */
-.qr-footer{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:460px;padding:22px 18px calc(16px + env(safe-area-inset-bottom,0px));z-index:60;background:linear-gradient(180deg,rgba(13,13,17,0) 0%,var(--bg) 32%);pointer-events:none}
-.qr-footer>*{pointer-events:auto}
-.qr-footer-skip{display:block;width:100%;margin:6px auto 0;padding:9px;background:transparent;border:0;color:var(--muted);font-size:13.5px;font-weight:600;cursor:pointer;text-align:center}
-.qr-footer-skip:hover{color:var(--text)}
+#quizResult .quiz-shell{padding-top:0;align-items:stretch}
 .qr-close{position:absolute;top:0;right:0;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:50%;color:var(--muted);font-size:20px;line-height:1;font-weight:400;cursor:pointer;padding:0;transition:background .15s,color .15s,border-color .15s;z-index:2}
 .qr-close:hover{background:rgba(255,255,255,.10);color:var(--text);border-color:rgba(255,255,255,.18)}
 .qr-eyebrow{display:inline-flex;align-items:center;gap:6px;padding:5px 12px 5px 13px;border-radius:999px;font-size:10.5px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#fbbf24;background:rgba(251,191,36,.10);border:1px solid rgba(251,191,36,.30);margin:18px auto 14px}
 .qr-eyebrow .qr-eb-dot{width:6px;height:6px;border-radius:50%;background:#fbbf24;box-shadow:0 0 8px #fbbf24;animation:qrDotPulse 1.4s ease-in-out infinite}
 @keyframes qrDotPulse{0%,100%{opacity:.6}50%{opacity:1}}
 .qr-hero{text-align:center;margin:6px 0 18px;animation:quizPop .6s cubic-bezier(.34,1.56,.64,1)}
-.qr-ring-wrap{position:relative;width:clamp(196px,54vw,248px);height:clamp(196px,54vw,248px);margin:0 auto 4px;display:flex;align-items:center;justify-content:center}
-.qr-ring-svg{width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+.qr-ring-wrap{position:relative;width:248px;height:248px;margin:0 auto 4px;display:flex;align-items:center;justify-content:center}
+.qr-ring-svg{transform:rotate(-90deg);overflow:visible}
 .qr-ring-track{fill:none;stroke:rgba(255,255,255,.085);stroke-width:14;stroke-linecap:round}
 .qr-ring-fill{fill:none;stroke-width:14;stroke-linecap:round;transition:stroke-dashoffset 1.5s cubic-bezier(.34,1.4,.4,1);filter:drop-shadow(0 0 16px rgba(251,191,36,.55))}
 .qr-ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:2px}
 .qr-ring-tag{font-size:10px;font-weight:800;letter-spacing:0.14em;color:rgba(255,255,255,.45);text-transform:uppercase;margin-bottom:2px}
-.qr-ring-num{font-size:clamp(62px,17vw,78px);font-weight:800;letter-spacing:-0.055em;line-height:1.12;font-variant-numeric:tabular-nums;background:linear-gradient(180deg,#FCD34D,#F59E0B);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;padding:2px 0 0 0.04em}
+.qr-ring-num{font-size:78px;font-weight:800;letter-spacing:-0.055em;line-height:1;font-variant-numeric:tabular-nums;background:linear-gradient(180deg,#FCD34D,#F59E0B);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;padding-left:0.04em}
 html.fm-native .qr-ring-num{font-feature-settings:'ss01','tnum','cv11';letter-spacing:-0.05em}
 .qr-ring-denom{font-size:13px;color:var(--muted);font-weight:600;margin-top:4px;letter-spacing:-0.01em}
 .qr-tier{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:7px 14px;border-radius:999px;margin-top:14px;color:#fcd34d;background:rgba(251,191,36,.10);border:1px solid rgba(251,191,36,.30)}
@@ -1022,9 +951,9 @@ html.fm-native .qr-ring-num{font-feature-settings:'ss01','tnum','cv11';letter-sp
 .qr-pct-num b{font-size:26px;font-weight:800;letter-spacing:-0.02em;color:#fbbf24}
 .qr-pct-body{flex:1;font-size:13.5px;line-height:1.45;color:var(--text);font-weight:500}
 .qr-pct-body b{color:#fff;font-weight:700}
-.qr-pct-bar-wrap{position:relative;padding-top:28px}
+.qr-pct-bar-wrap{position:relative;padding-top:18px}
 .qr-pct-bar{position:relative;height:8px;border-radius:999px;background:linear-gradient(90deg,rgba(248,113,113,.55),rgba(251,191,36,.55) 50%,rgba(74,222,128,.55));overflow:visible}
-.qr-pct-marker{position:absolute;top:-26px;transform:translateX(-50%);background:#fff;color:#100A14;font-size:9.5px;font-weight:800;letter-spacing:0.08em;padding:3px 7px;border-radius:6px;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.5);transition:left 1.2s cubic-bezier(.34,1.4,.4,1)}
+.qr-pct-marker{position:absolute;top:-18px;transform:translateX(-50%);background:#fff;color:#100A14;font-size:9.5px;font-weight:800;letter-spacing:0.08em;padding:3px 7px;border-radius:6px;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.5);transition:left 1.2s cubic-bezier(.34,1.4,.4,1)}
 .qr-pct-marker::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:4px solid transparent;border-top-color:#fff}
 .qr-pct-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#fff;border:2.5px solid #100A14;box-shadow:0 0 0 2px #fbbf24,0 4px 14px rgba(0,0,0,.5);transition:left 1.2s cubic-bezier(.34,1.4,.4,1)}
 .qr-pct-axis{display:flex;justify-content:space-between;font-size:10px;color:var(--dim);margin-top:8px;letter-spacing:0.04em;font-weight:600}
@@ -1082,223 +1011,6 @@ html.fm-native .qr-ring-num{font-feature-settings:'ss01','tnum','cv11';letter-sp
 /* tiny urgency badge */
 .qp-urgency{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.32);color:#fca5a5;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:0.04em;margin:0 0 10px}
 .qp-urgency .qp-dot{width:6px;height:6px;border-radius:50%;background:#f87171;animation:qaPulse 1.2s ease-in-out infinite}
-
-#result #resultCanvas{display:none !important}
-
-/* === P7: hide landmarks on #result final avatar === */
-#result #resultCanvas{display:none !important}
-
-/* === P9: bigger 6 metric tiles to fill the screen, depuff.ai-style density === */
-#result .metric-grid{gap:14px;margin-top:18px;margin-bottom:18px}
-#result .metric-tile{padding:18px 16px;gap:14px;border-radius:18px;background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.09);box-shadow:0 4px 14px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.05);min-height:84px}
-#result .metric-tile-ring{width:64px;height:64px}
-#result .metric-tile-val{font-size:19px;font-weight:900;letter-spacing:-.02em}
-#result .metric-tile-body{flex:1;min-width:0}
-#result .metric-tile-label{font-size:14.5px;font-weight:800;line-height:1.2;letter-spacing:.005em;color:#fff}
-#result .metric-tile-sub{font-size:11.5px;margin-top:4px;line-height:1.3;color:rgba(255,255,255,.65)}
-#result .metric-bar{margin-top:8px;height:4px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
-#result .metric-bar-fill{height:100%;background:linear-gradient(90deg,#A78BFA,#E879F9);border-radius:999px;transition:width 1.2s cubic-bezier(.34,1.2,.5,1)}
-
-/* === P10: kill scan-beam animation on bottom scan area === */
-.scan-beam{display:none !important}
-/* Face-scan beam: re-enabled only on the analysis screen for a live scanning look */
-#loading .scan-beam{display:block !important;top:0;height:44px;background:linear-gradient(to bottom,transparent,rgba(167,139,250,.7),rgba(196,181,253,.32),transparent);box-shadow:0 0 26px rgba(167,139,250,.6);animation:loadScanBeam 1.9s ease-in-out infinite}
-@keyframes loadScanBeam{0%{transform:translateY(-44px);opacity:0}12%{opacity:1}88%{opacity:1}100%{transform:translateY(240px);opacity:0}}
-
-/* === P11: hide landmarks/lines on tool screens (skin-plan, jawline-plan, haircut, dating-photo) — share toolCanvas === */
-#tool #toolCanvas{display:none !important}
-
-/* === v3: result-screen loading animations (Gemini in-flight) === */
-.metric-tile.is-loading .metric-tile-val{color:transparent !important;background:linear-gradient(90deg,rgba(255,255,255,.08) 0,rgba(255,255,255,.22) 50%,rgba(255,255,255,.08) 100%);background-size:200% 100%;animation:shimmerSub 1.4s linear infinite;border-radius:5px;min-width:36px;height:22px;display:inline-block;text-shadow:none}
-.metric-tile.is-loading .metric-tile-ring svg .fill{animation:ringPulse 1.6s ease-in-out infinite}
-.metric-tile.is-loading .metric-tile-sub{position:relative;color:transparent;background:linear-gradient(90deg,rgba(255,255,255,.06) 0,rgba(255,255,255,.18) 50%,rgba(255,255,255,.06) 100%);background-size:200% 100%;animation:shimmerSub 1.4s linear infinite;border-radius:4px;height:11px;min-width:60px;display:inline-block}
-/* loading state for new metric rows */
-.metric-row.is-loading .metric-row-val{color:transparent;background:linear-gradient(90deg,rgba(255,255,255,.08) 0,rgba(255,255,255,.22) 50%,rgba(255,255,255,.08) 100%);background-size:200% 100%;animation:shimmerSub 1.4s linear infinite;border-radius:5px;min-width:28px;height:18px;display:inline-block}
-.metric-row.is-loading .metric-row-fill{background:linear-gradient(90deg,rgba(255,255,255,.04) 0,rgba(255,255,255,.14) 50%,rgba(255,255,255,.04) 100%) !important;background-size:200% 100% !important;animation:shimmerSub 1.4s linear infinite;width:60% !important}
-.metric-row.is-loading .metric-row-sub{color:transparent;background:linear-gradient(90deg,rgba(255,255,255,.06) 0,rgba(255,255,255,.18) 50%,rgba(255,255,255,.06) 100%);background-size:200% 100%;animation:shimmerSub 1.4s linear infinite;border-radius:4px;height:11px;min-width:50px;display:inline-block}
-@keyframes pulseVal{0%,100%{opacity:.45}50%{opacity:.95}}
-@keyframes ringPulse{0%,100%{opacity:.35}50%{opacity:.85}}
-
-.show-all-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:10px;padding:11px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;color:rgba(255,255,255,.85);font-size:13.5px;font-weight:600;cursor:pointer;transition:background .15s,border-color .15s,transform .1s;-webkit-tap-highlight-color:transparent}
-.show-all-btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.14)}
-.show-all-btn:active{transform:scale(.985)}
-.show-all-btn svg{opacity:.75}
-@keyframes shimmerSub{0%{background-position:200% 0}100%{background-position:-200% 0}}
-.arch-badge-v2.is-thinking{animation:badgePulse 1.5s ease-in-out infinite}
-.arch-badge-v2.is-thinking .arch-name{filter:blur(5px);opacity:.6}
-.arch-badge-v2.is-thinking .arch-psl{opacity:.5}
-@keyframes badgePulse{0%,100%{box-shadow:0 6px 24px rgba(167,139,250,.5),inset 0 0 0 1px rgba(255,255,255,.08)}50%{box-shadow:0 6px 38px rgba(167,139,250,.9),inset 0 0 0 1px rgba(255,255,255,.18)}}
-/* AI insight summary block — hidden on result screen per user request */
-.ai-insight-block{display:none !important}
-/* Layout safety: prevent tile overflow on narrow screens */
-.metric-grid{min-width:0}
-.metric-tile{min-width:0;overflow:hidden}
-.metric-tile-body{min-width:0;flex:1 1 auto}
-.metric-tile-label,.metric-tile-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-@media (max-width:360px){
-  .fm-result-v2 .metric-row{padding:11px 13px 10px}
-  .fm-result-v2 .metric-row-label{font-size:13px}
-  .fm-result-v2 .metric-row-val{font-size:14px}
-  .fm-result-v2 .metric-row-sub{font-size:10px}
-}
-</style>
-<style>
-/* ===================== ONBOARDING REWORK (gender select + dual capture) ===================== */
-#genderSelect, #capture { padding-top:calc(env(safe-area-inset-top,0px) + 8px); }
-/* Gender select + capture must fit the viewport exactly — never scroll. */
-html.fm-fixed-screen, html.fm-fixed-screen body { height:100%; overflow:hidden; }
-html.fm-fixed-screen .app { min-height:0; height:100svh; height:100dvh; padding-top:calc(env(safe-area-inset-top,0px) + 6px); padding-bottom:max(8px,env(safe-area-inset-bottom,0px)); overflow:hidden; }
-html.fm-fixed-screen .screen.active { height:100%; }
-#genderSelect .quiz-shell, #capture .quiz-shell { min-height:0; height:100%; }
-.onb-back { position:absolute; top:calc(env(safe-area-inset-top,0px) + 4px); left:8px; z-index:6; width:42px; height:42px; border-radius:50%; border:0; background:transparent; color:var(--text); font-size:32px; line-height:1; display:grid; place-items:center; cursor:pointer; -webkit-tap-highlight-color:transparent; }
-.onb-back:active { transform:scale(.92); }
-.onb-head { text-align:center; margin:2px 0 14px; display:flex; flex-direction:column; align-items:center; }
-.onb-title { font-size:32px; text-align:center; margin:0 0 8px; animation:quizPop .5s cubic-bezier(.34,1.56,.64,1); }
-.onb-sub { font-size:15px; text-align:center; max-width:330px; margin:0 auto; }
-.onb-foot { margin-top:auto; padding-top:18px; display:flex; flex-direction:column; gap:10px; flex:0 0 auto; }
-
-/* Gender cards — two large photo cards stacked vertically (Male top, Female bottom) */
-.gender-cards { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; margin:4px 0 0; flex:1 1 auto; min-height:0; overflow-y:auto; animation:quizSlide .42s cubic-bezier(.4,0,.2,1); }
-.gender-card { position:relative; flex:1 1 0; min-height:0; aspect-ratio:1/1; width:auto; max-width:100%; border:2px solid var(--line-2); background:var(--surface-2); border-radius:24px; padding:0; cursor:pointer; overflow:hidden; transition:transform .16s cubic-bezier(.3,1.6,.6,1),border-color .2s,box-shadow .2s; -webkit-tap-highlight-color:transparent; }
-.gender-card:active { transform:scale(.985); }
-.gender-card-photo { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; background:#1a1022; }
-/* Blurred fill of the same photo as a fallback backdrop behind the
- * square cover photo (square cards => photo fills edge-to-edge). */
-.gender-card-photo .gcard-bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:blur(26px) brightness(.66) saturate(1.12); transform:scale(1.18); display:block; }
-.gender-card-photo .gcard-fg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
-.gender-card-photo::after { content:""; position:absolute; inset:0; background:linear-gradient(100deg,rgba(16,10,20,.62) 0%,rgba(16,10,20,.20) 40%,transparent 64%); }
-.gender-card-label { position:absolute; left:20px; top:16px; z-index:2; display:flex; align-items:center; gap:8px; padding:0; font-size:clamp(20px,5.4vw,24px); font-weight:800; color:#fff; letter-spacing:-.02em; text-shadow:0 2px 16px rgba(0,0,0,.55); }
-.gender-card-check { position:absolute; top:16px; right:16px; z-index:3; width:28px; height:28px; border-radius:50%; border:2px solid rgba(255,255,255,.65); background:rgba(0,0,0,.22); display:grid; place-items:center; transition:background .2s,border-color .2s; }
-.gender-card-check svg { width:15px; height:15px; stroke:#fff; fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; opacity:0; transition:opacity .2s; }
-.gender-card.selected { border-color:var(--p); box-shadow:0 12px 34px rgba(167,139,250,.34); }
-.gender-card.selected .gender-card-check { background:var(--p); border-color:var(--p); }
-.gender-card.selected .gender-card-check svg { opacity:1; }
-
-/* Capture stage */
-.cap-stage { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; margin:4px 0; flex:1 1 auto; min-height:0; animation:quizSlide .42s cubic-bezier(.4,0,.2,1); }
-.cap-oval { position:relative; width:auto; height:clamp(180px,38svh,300px); aspect-ratio:230/300; border-radius:50%/42%; overflow:hidden; background:#160d1d; border:1px solid var(--line-2); box-shadow:0 20px 50px rgba(0,0,0,.45), inset 0 0 0 1px rgba(167,139,250,.12); touch-action:none; }
-.cap-oval img { width:100%; height:100%; object-fit:cover; display:block; }
-.cap-oval.has-shot { cursor:grab; }
-.cap-oval.has-shot:active { cursor:grabbing; }
-.cap-shot { transform-origin:center center; will-change:transform; }
-.cap-drag-hint { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:var(--muted); }
-.cap-drag-hint svg { width:14px; height:14px; stroke:var(--p-2); fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
-.cap-example { filter:saturate(1.02); }
-.cap-oval-ring { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
-.cap-example-tag { position:absolute; top:12px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.5); color:#fff; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; padding:4px 12px; border-radius:999px; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
-.cap-shot-badge { position:absolute; bottom:14px; left:50%; transform:translateX(-50%); width:36px; height:36px; border-radius:50%; background:var(--ok); display:grid; place-items:center; box-shadow:0 6px 16px rgba(74,222,128,.45); }
-.cap-shot-badge svg { width:20px; height:20px; stroke:#0b3; stroke:#06281a; fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
-.cap-tips { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; max-width:340px; }
-.cap-tip { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:var(--muted); background:var(--surface-2); border:1px solid var(--line); border-radius:999px; padding:6px 12px; }
-.cap-tip svg { width:13px; height:13px; stroke:var(--p-2); fill:none; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
-.cap-actions { display:flex; flex-direction:column; gap:10px; }
-.btn.compact { height:48px; font-size:14px; }
-.cap-retake { background:none; border:0; color:var(--muted); font-size:13.5px; font-weight:600; cursor:pointer; padding:6px; text-decoration:underline; }
-/* Short viewports (small phones, iOS landscape-ish): tighten so nothing scrolls. */
-@media (max-height:740px){
-  .onb-title{ font-size:26px; margin:0 0 6px; }
-  .onb-sub{ font-size:13.5px; }
-  .onb-head{ margin:2px 0 10px; }
-  .cap-stage{ gap:10px; }
-  .onb-foot{ padding-top:12px; }
-}
-@media (max-height:640px){
-  .onb-title{ font-size:23px; }
-  .onb-sub{ display:none; }
-  .cap-tips{ display:none; }
-}
-
-/* Loading photo as a circle (data-upload screen) */
-#loading .scan-photo { width:240px; height:240px; max-width:240px !important; border-radius:50% !important; margin:6px auto 18px; aspect-ratio:auto; }
-#loading .scan-photo img { width:100%; height:100%; max-height:none !important; object-fit:cover; }
-.scan-uploading { text-align:center; font-size:12.5px; font-weight:600; color:var(--p-2); letter-spacing:.04em; margin:-6px 0 12px; }
-
-/* ===================== RESULT LOCK (only first 2 metrics free) ===================== */
-.fm-result-locked #resultMetricGrid .metric-row.is-locked { position:relative; }
-.fm-result-locked #resultMetricGrid .metric-row.is-locked .metric-row-head,
-.fm-result-locked #resultMetricGrid .metric-row.is-locked .metric-row-bar,
-.fm-result-locked #resultMetricGrid .metric-row.is-locked .metric-row-sub { filter:blur(7px); opacity:.6; pointer-events:none; user-select:none; }
-.fm-result-locked #resultMetricGrid .metric-row.is-locked::after { content:""; position:absolute; inset:0; }
-.metric-lock-ico { position:absolute; top:50%; right:14px; transform:translateY(-50%); width:26px; height:26px; border-radius:50%; background:rgba(167,139,250,.18); border:1px solid rgba(167,139,250,.4); display:none; place-items:center; z-index:3; }
-.fm-result-locked .metric-row.is-locked .metric-lock-ico { display:grid; }
-.metric-lock-ico svg { width:13px; height:13px; stroke:var(--p-2); fill:none; stroke-width:2.2; }
-.is-premium .fm-result-locked .metric-row.is-locked .metric-row-head,
-.is-premium .fm-result-locked .metric-row.is-locked .metric-row-bar,
-.is-premium .fm-result-locked .metric-row.is-locked .metric-row-sub { filter:none; opacity:1; }
-
-/* Premium upsell card on the locked result */
-.result-unlock { display:none; margin:16px 0 4px; border-radius:20px; padding:20px 18px; text-align:center;
-  background:radial-gradient(120% 80% at 50% 0%,rgba(167,139,250,.20),transparent 70%),linear-gradient(180deg,rgba(167,139,250,.10),rgba(255,255,255,.025));
-  border:1px solid rgba(167,139,250,.3); }
-.fm-result-locked .result-unlock { display:block; animation:quizSlide .4s cubic-bezier(.4,0,.2,1); }
-.is-premium .result-unlock { display:none !important; }
-
-/* --- Scan-result teaser (always shown after a scan in this build) ----------
-   The score, the photo and the first two metrics stay readable; the archetype
-   badge, the PSL value and metrics 3-6 are blurred behind the unlock card.
-   Independent of the `premium` flag so the preview always shows the
-   pay-to-reveal teaser. */
-#result.fm-teaser .arch-badge-v2 { filter:blur(8px); opacity:.72; pointer-events:none; user-select:none; }
-#result.fm-teaser #resultMetricGrid .metric-row.is-locked { position:relative; }
-#result.fm-teaser #resultMetricGrid .metric-row.is-locked .metric-row-head,
-#result.fm-teaser #resultMetricGrid .metric-row.is-locked .metric-row-bar,
-#result.fm-teaser #resultMetricGrid .metric-row.is-locked .metric-row-sub { filter:blur(7px); opacity:.6; pointer-events:none; user-select:none; }
-#result.fm-teaser .metric-row.is-locked .metric-lock-ico { display:grid; }
-#result.fm-teaser .result-unlock { display:block !important; animation:quizSlide .4s cubic-bezier(.4,0,.2,1); }
-
-/* Big "SCAN MY FACE" CTA on the test-result screen */
-.btn.btn-scanface { font-size:18px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; padding:18px 22px; border-radius:18px; box-shadow:0 12px 32px rgba(139,92,246,.5), inset 0 0 0 1px rgba(196,181,253,.3); }
-.btn.btn-scanface .btn-ico { width:22px; height:22px; }
-
-.result-unlock-badge { display:inline-flex; align-items:center; gap:6px; font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--p-2); padding:5px 11px; border-radius:999px; border:1px solid rgba(167,139,250,.34); background:rgba(167,139,250,.10); margin-bottom:10px; }
-.result-unlock h3 { font-size:21px; font-weight:800; letter-spacing:-.02em; color:var(--text); text-transform:none; margin:0 0 6px; }
-.result-unlock p { font-size:13.5px; color:var(--muted); line-height:1.5; margin:0 0 14px; }
-.result-unlock .lock-feats { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:16px; }
-.result-unlock .lock-feat { font-size:12px; font-weight:600; color:var(--text); background:var(--surface-2); border:1px solid var(--line); border-radius:999px; padding:6px 11px; }
-
-/* Bigger quiz typography to feel "крупно" */
-#quiz .quiz-title { font-size:31px; }
-#quiz .quiz-sub { font-size:15.5px; }
-</style>
-
-<style id="fm-quiz-readability-fix">
-/* FaceMax quiz readability + scroll lock for iOS WebView (Appetize). */
-#quiz .quiz-sub,
-#quiz .quiz-option-text span,
-#quiz .quiz-stat-lbl,
-#quiz .quiz-legal-note,
-#quiz .quiz-cta-note,
-#quizAnalyze .qa-step,
-#quizAnalyze .qa-social,
-#quizResult .qr-eyebrow,
-#quizResult .qr-disclaimer,
-#quizResult .qr-cats-head{color:rgba(255,255,255,.82) !important}
-
-#quiz .quiz-option,
-#quiz .quiz-pill,
-#quiz .quiz-option-text,
-#quiz .quiz-option-text strong,
-#quiz .quiz-title,
-#quizResult .qr-ring-num,
-#quizResult .qr-ring-tag,
-#quizResult .qr-ring-denom,
-#quizResult .qr-tier{color:#fff !important}
-
-#quiz .quiz-back{color:rgba(255,255,255,.74)}
-#quiz .quiz-back:hover{color:#fff}
-
-/* Quiz body must not scroll itself - only options scroll. */
-#quiz .quiz-body{overflow:hidden !important;display:flex;flex-direction:column}
-#quiz .quiz-options{overflow-y:auto !important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;flex:1 1 0;min-height:0}
-#quiz .quiz-cta{position:sticky;bottom:0;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
-
-/* Outer screen containers must not scroll */
-#quiz.screen.active,
-#quizAnalyze.screen.active,
-#quizResult.screen.active{overflow:hidden}
-
-/* WebView: prevent rubber-band on body when quiz is active */
-html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-action:pan-y}
 </style>
 </head>
 <body>
@@ -1347,89 +1059,9 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
     <div class="quiz-top">
       <button class="quiz-back" id="quizBackBtn" onclick="quizBack()" aria-label="Back" style="visibility:hidden">‹</button>
       <div class="quiz-progress"><div class="quiz-progress-bar" id="quizProgressBar" style="width:0"></div></div>
+      <button class="quiz-skip" id="quizSkipBtn" onclick="quizSkip()">Skip</button>
     </div>
     <div class="quiz-body" id="quizBody"><!-- step rendered by JS --></div>
-  </div>
-</section>
-
-<!-- =============================== GENDER SELECT (onboarding step 1) =============================== -->
-<section id="genderSelect" class="screen">
-  <div class="quiz-shell">
-    <button class="onb-back" id="genderBackBtn" onclick="onbGenderBack()" aria-label="Back">‹</button>
-    <div class="onb-head">
-      <div class="quiz-eyebrow" id="genderEyebrow" style="align-self:center">Step 1 · About you</div>
-      <h1 class="quiz-title onb-title">Choose your gender</h1>
-      <p class="quiz-sub onb-sub">We calibrate every facial metric to your features for an accurate AI read.</p>
-    </div>
-    <div class="gender-cards">
-      <button class="gender-card" type="button" data-gender="male" onclick="onbSelectGender('male')">
-        <div class="gender-card-photo"><img class="gcard-bg" src="assets/onboarding/male-front.jpg" alt="" aria-hidden="true" loading="eager"><img class="gcard-fg" src="assets/onboarding/male-front.jpg" alt="Male" loading="eager"></div>
-        <span class="gender-card-check"><svg viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></svg></span>
-        <div class="gender-card-label"><b>Male</b></div>
-      </button>
-      <button class="gender-card" type="button" data-gender="female" onclick="onbSelectGender('female')">
-        <div class="gender-card-photo"><img class="gcard-bg" src="assets/onboarding/female-front.jpg" alt="" aria-hidden="true" loading="eager"><img class="gcard-fg" src="assets/onboarding/female-front.jpg" alt="Female" loading="eager"></div>
-        <span class="gender-card-check"><svg viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></svg></span>
-        <div class="gender-card-label"><b>Female</b></div>
-      </button>
-    </div>
-    <div class="onb-foot">
-      <button class="btn" id="genderContinueBtn" onclick="onbGenderContinue()" disabled>
-        <span>Select to continue →</span>
-      </button>
-    </div>
-  </div>
-</section>
-
-<!-- =============================== PHOTO CAPTURE (front + side) =============================== -->
-<section id="capture" class="screen">
-  <div class="quiz-shell">
-    <div class="quiz-top">
-      <button class="quiz-back" id="captureBackBtn" onclick="onbCaptureBack()" aria-label="Back">‹</button>
-      <div class="quiz-progress"><div class="quiz-progress-bar" id="captureProgressBar" style="width:66%"></div></div>
-      <div style="width:34px"></div>
-    </div>
-    <div class="onb-head">
-      <div class="quiz-eyebrow" style="align-self:center" id="captureEyebrow">Step · Front photo</div>
-      <h1 class="quiz-title onb-title" id="captureTitle">Take a front photo</h1>
-      <p class="quiz-sub onb-sub" id="captureSub">Look straight at the camera, neutral face, good light. No filters.</p>
-    </div>
-
-    <div class="cap-stage">
-      <div class="cap-oval" id="capOval">
-        <img class="cap-example" id="capExampleImg" src="assets/onboarding/male-front.jpg" alt="Example">
-        <img class="cap-shot hidden" id="capShotImg" alt="">
-        <svg class="cap-oval-ring" viewBox="0 0 100 130" preserveAspectRatio="none" aria-hidden="true">
-          <ellipse cx="50" cy="65" rx="46" ry="62" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.1" stroke-dasharray="3,3"/>
-        </svg>
-        <div class="cap-example-tag" id="capExampleTag">Example</div>
-        <div class="cap-shot-badge hidden" id="capShotBadge"><svg viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></svg></div>
-      </div>
-      <div class="cap-tips" id="capTips">
-        <span class="cap-tip"><svg viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></svg>Whole face in the oval</span>
-        <span class="cap-tip"><svg viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></svg>Bright, even light</span>
-        <span class="cap-tip"><svg viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></svg>No glasses / hat</span>
-      </div>
-      <div class="cap-drag-hint hidden" id="capDragHint"><svg viewBox="0 0 24 24"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>Drag to move · pinch / scroll to zoom</div>
-    </div>
-
-    <input type="file" id="capFileInput" accept="image/*" style="display:none">
-    <div class="onb-foot">
-      <div class="cap-actions">
-        <button class="btn" id="capCameraBtn" onclick="onbOpenCamera()">
-          <svg class="btn-ico" viewBox="0 0 24 24"><circle cx="12" cy="13" r="4"/><path d="M5 7h3l1.5-2h5L16 7h3v12H5z"/></svg>
-          <span>Take a selfie</span>
-        </button>
-        <button class="btn ghost compact" id="capUploadBtn" onclick="onbPickFromGallery()">
-          <svg class="btn-ico" viewBox="0 0 24 24"><path d="M12 16V4m0 0-4 4m4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
-          <span>Upload from gallery</span>
-        </button>
-      </div>
-      <button class="btn hidden" id="capContinueBtn" onclick="onbCaptureContinue()">
-        <span>Continue →</span>
-      </button>
-      <button class="cap-retake hidden" id="capRetakeBtn" onclick="onbRetake()">Retake photo</button>
-    </div>
   </div>
 </section>
 
@@ -1513,14 +1145,17 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
       </div>
     </div>
 
-    <p class="qr-disclaimer" id="qrDisclaimer">Glow-Up Readiness is calculated from your self-reported routine, mood and commitment — not your appearance. Cosmetic &amp; lifestyle guidance only, not medical advice.</p>
+    <button class="btn" id="quizResultCta" onclick="quizShowPaywall()">
+      <svg class="btn-ico" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      <span>Boost my score →</span>
+    </button>
 
-    <div class="qr-footer">
-      <button class="btn btn-scanface" id="quizResultCta" onclick="quizResultToScan()">
-        <svg class="btn-ico" viewBox="0 0 24 24"><circle cx="12" cy="13" r="4"/><path d="M5 7h3l1.5-2h5L16 7h3v12H5z"/></svg>
-        <span>Scan my face</span>
-      </button>
-    </div>
+    <button class="qp-free-cta" onclick="quizPaywallClose()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
+      <span>Skip for now</span>
+    </button>
+
+    <p class="qr-disclaimer" id="qrDisclaimer">Glow-Up Readiness is calculated from your self-reported routine, mood and commitment — not your appearance. Cosmetic &amp; lifestyle guidance only, not medical advice.</p>
   </div>
 </section>
 
@@ -1562,14 +1197,14 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
         </span>
         <span class="qp-plan-price"><b>$9.90</b></span>
       </button>
-      <button class="qp-plan" data-plan="yearly" onclick="quizSelectPlan('yearly')">
+      <button class="qp-plan" data-plan="lifetime" onclick="quizSelectPlan('lifetime')">
         <span class="qp-plan-tag" style="background:linear-gradient(90deg,#fbbf24,#f59e0b)">Best value</span>
         <span class="qp-plan-radio"></span>
         <span class="qp-plan-info">
-          <span class="qp-plan-name">1 year</span>
-          <span class="qp-plan-meta">Billed annually · save the most</span>
+          <span class="qp-plan-name">Lifetime</span>
+          <span class="qp-plan-meta">One-time payment · forever access</span>
         </span>
-        <span class="qp-plan-price"><b>$39.90</b></span>
+        <span class="qp-plan-price"><b>$49.90</b></span>
       </button>
     </div>
 
@@ -1580,7 +1215,7 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
       <span>Unlock my full analysis</span>
     </button>
 
-    <p class="qp-pay-disclosure">Auto-renews until canceled. Cancel anytime in App Store settings. $2.90/week, $9.90/month or $39.90/year · <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" rel="noopener">Terms of Use</a> · <a href="https://facemax-preview.pages.dev/privacy" target="_blank" rel="noopener">Privacy Policy</a></p>
+    <p class="qp-pay-disclosure">Auto-renews until canceled. Cancel anytime in App Store settings. $2.90/week, $9.90/month or $49.90 one-time · <a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" rel="noopener">Terms of Use</a> · <a href="https://facemax-preview.pages.dev/privacy" target="_blank" rel="noopener">Privacy Policy</a></p>
 
     <div class="qp-trust">
       <span class="qp-trust-item"><svg viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></svg>Cancel anytime</span>
@@ -1600,7 +1235,7 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
 <!-- TOPBAR (shared) -->
 <div class="topbar">
   <div class="brand">
-    <div class="logo" id="appLogo"><img src="assets/logo.png" alt=""></div>
+    <div class="logo" id="appLogo" onclick="__devTapLogo()" style="cursor:pointer"><img src="assets/logo.png" alt=""></div>
     <div>
       <div class="brand-title">FaceMax AI</div>
       <div class="brand-sub" id="accessText">AI face analysis</div>
@@ -1628,10 +1263,14 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
             </radialGradient>
           </defs>
           <circle cx="100" cy="100" r="92" fill="url(#orbGrad)"/>
-          <g stroke="rgba(255,255,255,.10)" stroke-width=".4" fill="none">
-            <ellipse cx="100" cy="100" rx="54" ry="72"/>
-            <ellipse cx="100" cy="100" rx="34" ry="64"/>
-            <ellipse cx="100" cy="100" rx="18" ry="56"/>
+          <g stroke="rgba(255,255,255,.18)" stroke-width=".6" fill="none">
+            <ellipse cx="100" cy="100" rx="64" ry="80"/>
+            <ellipse cx="100" cy="100" rx="44" ry="74"/>
+            <ellipse cx="100" cy="100" rx="24" ry="68"/>
+            <path d="M36 100 Q100 70 164 100"/>
+            <path d="M36 100 Q100 130 164 100"/>
+            <path d="M64 60 Q100 90 136 60"/>
+            <path d="M64 140 Q100 110 136 140"/>
           </g>
         </svg>
         <div class="orb-stat">
@@ -1644,7 +1283,7 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
     <h1 class="home-title" id="homeHeading">Your daily glow check.</h1>
     <p class="home-sub" id="homeSub">One selfie. AI rates harmony, skin, jawline — and gives a soft self-care plan for today.</p>
 
-    <button class="btn btn-hero" onclick="startGenderScan()">
+    <button class="btn btn-hero" onclick="openScreen('upload')">
       <svg class="btn-ico" viewBox="0 0 24 24"><circle cx="12" cy="13" r="4"/><path d="M5 7h3l1.5-2h5L16 7h3v12H5z"/></svg>
       <span>Scan my face</span>
     </button>
@@ -1696,12 +1335,8 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
   </div>
 
   <div id="homeHistoryWrap" class="hidden" style="margin-top:14px">
-    <div class="sec-hdr"><h3>Recent scans</h3></div>
+    <div class="sec-hdr"><h3>Recent scans</h3><a onclick="openScreen('profile')">All</a></div>
     <div class="list" id="homeHistoryList"></div>
-    <button id="homeHistoryShowAll" class="show-all-btn hidden" type="button" onclick="openScreen('profile')">
-      <span>Show all</span>
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-    </button>
   </div>
 
 </section>
@@ -1774,42 +1409,32 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
 
 <!-- =============================== LOADING =============================== -->
 <section id="loading" class="screen">
-  <h2 class="center">Analyzing your photo<span class="dots" aria-hidden="true"><span></span><span></span><span></span></span></h2>
+  <h2 class="center">Analyzing your photo</h2>
   <p class="muted center" style="margin:0 0 14px">Reading 478 facial landmarks…</p>
 
-  <div class="scan-uploading" id="scanUploading">Uploading your data · 0%</div>
-
-  <div class="photo-frame scan-photo">
+  <div class="photo-frame">
     <img id="loadingImg" alt="">
     <div class="scan-grid"></div>
     <div class="scan-beam"></div>
     <canvas class="face-canvas" id="loadingCanvas"></canvas>
   </div>
 
-  <div class="scan-metrics" id="scanMetrics">
-    <div class="scan-metric" data-k="jawline">
-      <div class="scan-metric-top"><span class="scan-metric-name">Jawline</span><span class="scan-metric-pct" id="loadPctJawline">0%</span></div>
-      <div class="scan-metric-track"><div class="scan-metric-fill" id="loadBarJawline"></div></div>
+  <div class="card mt-12">
+    <div class="scan-step">
+      <div class="step-dot" id="step1dot">·</div>
+      <div class="step-txt" id="step1txt">Detecting face landmarks</div>
     </div>
-    <div class="scan-metric" data-k="cheekbones">
-      <div class="scan-metric-top"><span class="scan-metric-name">Cheekbones</span><span class="scan-metric-pct" id="loadPctCheekbones">0%</span></div>
-      <div class="scan-metric-track"><div class="scan-metric-fill" id="loadBarCheekbones"></div></div>
+    <div class="scan-step">
+      <div class="step-dot" id="step2dot">·</div>
+      <div class="step-txt" id="step2txt">Measuring symmetry &amp; ratios</div>
     </div>
-    <div class="scan-metric" data-k="eyes">
-      <div class="scan-metric-top"><span class="scan-metric-name">Eyes</span><span class="scan-metric-pct" id="loadPctEyes">0%</span></div>
-      <div class="scan-metric-track"><div class="scan-metric-fill" id="loadBarEyes"></div></div>
+    <div class="scan-step">
+      <div class="step-dot" id="step3dot">·</div>
+      <div class="step-txt" id="step3txt">Analyzing skin &amp; harmony</div>
     </div>
-    <div class="scan-metric" data-k="lips">
-      <div class="scan-metric-top"><span class="scan-metric-name">Lips</span><span class="scan-metric-pct" id="loadPctLips">0%</span></div>
-      <div class="scan-metric-track"><div class="scan-metric-fill" id="loadBarLips"></div></div>
-    </div>
-    <div class="scan-metric" data-k="nose">
-      <div class="scan-metric-top"><span class="scan-metric-name">Nose</span><span class="scan-metric-pct" id="loadPctNose">0%</span></div>
-      <div class="scan-metric-track"><div class="scan-metric-fill" id="loadBarNose"></div></div>
-    </div>
-    <div class="scan-metric" data-k="skin">
-      <div class="scan-metric-top"><span class="scan-metric-name">Skin</span><span class="scan-metric-pct" id="loadPctSkin">0%</span></div>
-      <div class="scan-metric-track"><div class="scan-metric-fill" id="loadBarSkin"></div></div>
+    <div class="scan-step">
+      <div class="step-dot" id="step4dot">·</div>
+      <div class="step-txt" id="step4txt">Generating your score</div>
     </div>
   </div>
 </section>
@@ -1825,90 +1450,84 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
     </div>
   </div>
 
-  <!-- Big centered score -->
-  <div class="result-score-big">
-    <span class="result-score-num" id="resultScoreNum">--</span>
-    <span class="result-score-of">/100</span>
-  </div>
-
   <!-- Archetype badge + PSL mini -->
   <div id="resultArchBadge" class="arch-badge-v2 is-loading">
     <span class="arch-name" id="resultArchetype">Analyzing</span>
     <span class="arch-psl" id="resultPsl">PSL —</span>
   </div>
 
-  <!-- Horizontal score bar -->
+  <!-- Horizontal 0-100 score bar with red->yellow->green gradient + marker pin -->
   <div class="score-bar-wrap">
     <div class="score-bar-line">
       <div class="score-bar-marker" id="resultScoreMarker" style="left:0%">
+        <div class="score-bar-marker-num"><span id="resultScoreNum">--</span><span style="opacity:.55;font-weight:600">/100</span></div>
         <div class="score-bar-marker-pin"></div>
       </div>
     </div>
-    <div class="score-bar-ticks">
-      <span class="score-bar-tick" style="left:0%">0</span>
-      <span class="score-bar-tick" style="left:25%">25</span>
-      <span class="score-bar-tick" style="left:50%">50</span>
-      <span class="score-bar-tick" style="left:75%">75</span>
-      <span class="score-bar-tick" style="left:100%">100</span>
-    </div>
+    <div class="score-bar-scale"><span>0</span><span>50</span><span>100</span></div>
   </div>
 
-  <!-- 6 metric tiles with horizontal progress bars -->
-  <div class="metric-list" id="resultMetricGrid">
-    <div class="metric-row" data-metric="jawline">
-      <div class="metric-row-head">
-        <span class="metric-row-label">Jawline</span>
-        <span class="metric-row-val" id="metricJawlineVal">--</span>
+  <!-- 6 metric tiles in 2x3 grid, each with a circular progress ring -->
+  <div class="metric-grid" id="resultMetricGrid">
+    <div class="metric-tile" data-metric="jawline">
+      <div class="metric-tile-ring">
+        <svg viewBox="0 0 36 36"><circle class="track" cx="18" cy="18" r="15"/><circle class="fill" id="ringJawline" cx="18" cy="18" r="15"/></svg>
+        <span class="metric-tile-val" id="metricJawlineVal">--</span>
       </div>
-      <div class="metric-row-bar"><div class="metric-row-fill" id="barJawline"></div></div>
-      <div class="metric-row-sub" id="metricJawlineSub">—</div>
-      <!-- hidden ring for legacy JS -->
-      <svg style="display:none"><circle id="ringJawline" r="15"/></svg>
+      <div class="metric-tile-body">
+        <div class="metric-tile-label">Jawline</div>
+        <div class="metric-tile-sub" id="metricJawlineSub">—</div>
+      </div>
     </div>
-    <div class="metric-row" data-metric="cheekbones">
-      <div class="metric-row-head">
-        <span class="metric-row-label">Cheekbones</span>
-        <span class="metric-row-val" id="metricCheekbonesVal">--</span>
+    <div class="metric-tile" data-metric="cheekbones">
+      <div class="metric-tile-ring">
+        <svg viewBox="0 0 36 36"><circle class="track" cx="18" cy="18" r="15"/><circle class="fill" id="ringCheekbones" cx="18" cy="18" r="15"/></svg>
+        <span class="metric-tile-val" id="metricCheekbonesVal">--</span>
       </div>
-      <div class="metric-row-bar"><div class="metric-row-fill" id="barCheekbones"></div></div>
-      <div class="metric-row-sub" id="metricCheekbonesSub">—</div>
-      <svg style="display:none"><circle id="ringCheekbones" r="15"/></svg>
+      <div class="metric-tile-body">
+        <div class="metric-tile-label">Cheekbones</div>
+        <div class="metric-tile-sub" id="metricCheekbonesSub">—</div>
+      </div>
     </div>
-    <div class="metric-row" data-metric="eyes">
-      <div class="metric-row-head">
-        <span class="metric-row-label">Eyes</span>
-        <span class="metric-row-val" id="metricEyesVal">--</span>
+    <div class="metric-tile" data-metric="eyes">
+      <div class="metric-tile-ring">
+        <svg viewBox="0 0 36 36"><circle class="track" cx="18" cy="18" r="15"/><circle class="fill" id="ringEyes" cx="18" cy="18" r="15"/></svg>
+        <span class="metric-tile-val" id="metricEyesVal">--</span>
       </div>
-      <div class="metric-row-bar"><div class="metric-row-fill" id="barEyes"></div></div>
-      <div class="metric-row-sub" id="metricEyesSub">—</div>
-      <svg style="display:none"><circle id="ringEyes" r="15"/></svg>
+      <div class="metric-tile-body">
+        <div class="metric-tile-label">Eyes</div>
+        <div class="metric-tile-sub" id="metricEyesSub">—</div>
+      </div>
     </div>
-    <div class="metric-row" data-metric="lips">
-      <div class="metric-row-head">
-        <span class="metric-row-label">Lips</span>
-        <span class="metric-row-val" id="metricLipsVal">--</span>
+    <div class="metric-tile" data-metric="lips">
+      <div class="metric-tile-ring">
+        <svg viewBox="0 0 36 36"><circle class="track" cx="18" cy="18" r="15"/><circle class="fill" id="ringLips" cx="18" cy="18" r="15"/></svg>
+        <span class="metric-tile-val" id="metricLipsVal">--</span>
       </div>
-      <div class="metric-row-bar"><div class="metric-row-fill" id="barLips"></div></div>
-      <div class="metric-row-sub" id="metricLipsSub">—</div>
-      <svg style="display:none"><circle id="ringLips" r="15"/></svg>
+      <div class="metric-tile-body">
+        <div class="metric-tile-label">Lips</div>
+        <div class="metric-tile-sub" id="metricLipsSub">—</div>
+      </div>
     </div>
-    <div class="metric-row" data-metric="nose">
-      <div class="metric-row-head">
-        <span class="metric-row-label">Nose</span>
-        <span class="metric-row-val" id="metricNoseVal">--</span>
+    <div class="metric-tile" data-metric="nose">
+      <div class="metric-tile-ring">
+        <svg viewBox="0 0 36 36"><circle class="track" cx="18" cy="18" r="15"/><circle class="fill" id="ringNose" cx="18" cy="18" r="15"/></svg>
+        <span class="metric-tile-val" id="metricNoseVal">--</span>
       </div>
-      <div class="metric-row-bar"><div class="metric-row-fill" id="barNose"></div></div>
-      <div class="metric-row-sub" id="metricNoseSub">—</div>
-      <svg style="display:none"><circle id="ringNose" r="15"/></svg>
+      <div class="metric-tile-body">
+        <div class="metric-tile-label">Nose</div>
+        <div class="metric-tile-sub" id="metricNoseSub">—</div>
+      </div>
     </div>
-    <div class="metric-row" data-metric="skin">
-      <div class="metric-row-head">
-        <span class="metric-row-label">Skin</span>
-        <span class="metric-row-val" id="metricSkinVal">--</span>
+    <div class="metric-tile" data-metric="skin">
+      <div class="metric-tile-ring">
+        <svg viewBox="0 0 36 36"><circle class="track" cx="18" cy="18" r="15"/><circle class="fill" id="ringSkin" cx="18" cy="18" r="15"/></svg>
+        <span class="metric-tile-val" id="metricSkinVal">--</span>
       </div>
-      <div class="metric-row-bar"><div class="metric-row-fill" id="barSkin"></div></div>
-      <div class="metric-row-sub" id="metricSkinSub">—</div>
-      <svg style="display:none"><circle id="ringSkin" r="15"/></svg>
+      <div class="metric-tile-body">
+        <div class="metric-tile-label">Skin</div>
+        <div class="metric-tile-sub" id="metricSkinSub">—</div>
+      </div>
     </div>
   </div>
 
@@ -1932,20 +1551,6 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
     <svg style="position:absolute;width:0;height:0"><circle id="resultRing" class="ring-fill" cx="0" cy="0" r="104" stroke-dasharray="653.45" stroke-dashoffset="653.45"></circle></svg>
   </div>
 
-  <!-- Premium upsell shown when results are locked (only first 2 metrics free) -->
-  <div class="result-unlock" id="resultUnlock">
-    <div class="result-unlock-badge"><span>🔒</span><span>Locked</span></div>
-    <h3>Want your full results?</h3>
-    <p>You're seeing only 2 of your metrics. Unlock your full AI face report with every score, your archetype and a personalized glow-up plan.</p>
-    <div class="lock-feats">
-      <span class="lock-feat">Eyes</span><span class="lock-feat">Lips</span><span class="lock-feat">Nose</span><span class="lock-feat">Skin</span><span class="lock-feat">+ full report</span>
-    </div>
-    <button class="btn" onclick="quizShowPaywall()">
-      <svg class="btn-ico" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" fill="none" stroke-width="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" fill="none" stroke-width="2"/></svg>
-      <span>Unlock full results</span>
-    </button>
-  </div>
-
   <!-- Compact CTA: one tap to PRO; one text link to scan again. The label
        and target switch between PRO checkout and the report screen when
        the user is already Premium (handled by `applyPremiumToResult`). -->
@@ -1954,7 +1559,7 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
       <svg class="btn-ico" viewBox="0 0 24 24"><path d="M12 2 9 9l-7 1 5 5-1 7 6-3 6 3-1-7 5-5-7-1z"/></svg>
       <span id="resultMainCtaLabel">Get full AI report (PRO)</span>
     </button>
-    <button class="btn-text" onclick="startGenderScan()">Scan another photo →</button>
+    <button class="btn-text" onclick="openScreen('upload')">Scan another photo →</button>
   </div>
 </section>
 
@@ -2031,7 +1636,7 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
     </div>
     <b style="font-size:15px">No scans yet</b>
     <p class="muted" style="margin:6px 0 14px;font-size:12.5px">Take your first face scan and your history will live here.</p>
-    <button class="btn compact" onclick="startGenderScan()"><span>Start a scan</span></button>
+    <button class="btn compact" onclick="openScreen('upload')"><span>Start a scan</span></button>
   </div>
   <div id="historyList" class="list" style="margin-top:6px"></div>
 </section>
@@ -2072,19 +1677,6 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
   </div>
 </div>
 
-<!-- Analysis failure modal: shown when the AI photo analysis fully fails (after the worker's retries). -->
-<div id="aiErrModal" class="pq-modal" role="dialog" aria-modal="true" aria-labelledby="aiErrTitle">
-  <div class="pq-modal-card">
-    <div class="pq-ico">
-      <svg viewBox="0 0 24 24"><path d="M10.3 3.8 2.3 18a2 2 0 0 0 1.7 3h16a2 2 0 0 0 1.7-3L13.7 3.8a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 16.5v.01"/></svg>
-    </div>
-    <h2 id="aiErrTitle">Analysis failed</h2>
-    <p id="aiErrLead">We couldn't analyze your photo right now. Please check your connection and try again.</p>
-    <button class="btn" type="button" id="aiErrRetryBtn" onclick="retryAnalysis()"><span>Try again</span></button>
-    <button class="btn ghost" type="button" onclick="closeAnalysisError()" style="margin-top:10px">Cancel</button>
-  </div>
-</div>
-
 <!-- =============================== PROFILE =============================== -->
 <section id="profile" class="screen">
 
@@ -2110,10 +1702,6 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
 
   <div class="sec-hdr"><h3>Scan history</h3></div>
   <div class="list" id="profileHistoryList"></div>
-  <button id="profileHistoryShowAll" class="show-all-btn hidden" type="button" onclick="toggleProfileHistoryAll()">
-    <span>Show all</span>
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-  </button>
 
   <!-- v3: the in-app "Buy Premium" plate was removed (user feedback:
        "remove all buy-premium badges, the quiz paywall is the only
@@ -2343,13 +1931,8 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
   </div>
 
   <div id="foodScanLoading" class="hidden">
-    <div class="foodscan-preview scanning">
-      <img id="foodScanScanImg" alt="">
-      <div class="fs-scan-grid"></div>
-      <div class="fs-scan-beam"></div>
-      <div class="fs-scan-cap">Analyzing your meal<i></i><i></i><i></i></div>
-    </div>
-    <p class="muted" style="text-align:center;margin:10px 0 0">AI is reading your meal — sodium, sugar, processed carbs, fluids…</p>
+    <div class="bloat-ring" style="--br-color:#A78BFA;--br-pct:35"><div class="br-circle"><div class="br-inner"><b>…</b><small>Scanning</small></div></div></div>
+    <p class="muted" style="text-align:center;margin:6px 0 0">AI is reading your meal — sodium, sugar, processed carbs, fluids…</p>
   </div>
 
   <div id="foodScanResult" class="hidden">
@@ -2514,7 +2097,7 @@ html.fm-quiz-active,html.fm-quiz-active body{overscroll-behavior-y:none;touch-ac
     <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
     Profile
   </button>
-  <button class="nav-scan-fab" data-screen="upload" onclick="startGenderScan()" aria-label="Scan">
+  <button class="nav-scan-fab" data-screen="upload" onclick="openScreen('upload')" aria-label="Scan">
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M5 8h2.5L9 6h6l1.5 2H19a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
       <circle cx="12" cy="13" r="3.6" fill="none" stroke="#fff" stroke-width="1.9"/>
@@ -2533,7 +2116,7 @@ const API_BASE = "https://facemax-api.voou96329.workers.dev";
 // (The on-device MediaPipe scan has zero per-use cost. Premium gates only
 // the OpenAI-powered full AI report.) Kept as `Infinity` so legacy call
 // sites that ask `freeScansLeft()` keep working without code surgery.
-const FREE_SCAN_LIMIT = 0;
+const FREE_SCAN_LIMIT = Infinity;
 const FREE_SCAN_LOCAL_KEY = "facemax_free_scans_used";
 let freeScansUsedLocal = (() => {
   try { return Math.max(0, parseInt(localStorage.getItem(FREE_SCAN_LOCAL_KEY) || "0", 10)) || 0; }
@@ -2542,20 +2125,10 @@ let freeScansUsedLocal = (() => {
 let freeScansUsedServer = null; // populated by /api/scan-count
 
 let selectedImageData = "";
-let selectedSideImageData = ""; // optional side selfie (UX/context; front photo is what gets analyzed)
-let _captureTarget = null;      // "front" | "side" | null(legacy upload) — routes camera/gallery captures
-let onbState = { gender: null, which: "front", front: "", side: "", flow: "onboarding" };
 let faceLandmarks = null;
 let detector = null;
 let premium = false;
 let premiumUntil = null;
-// QA: ?paywall=1 in the URL forces the non-premium paywall flow on web so the
-// quiz paywall can be previewed without devtools. ?paywall=0 clears it again.
-try {
-  const _qp = new URLSearchParams(location.search).get("paywall");
-  if (_qp === "1") { localStorage.setItem("FACEMAX_FORCE_PAYWALL", "1"); localStorage.removeItem("FACEMAX_QUIZ_UNLOCKED"); }
-  else if (_qp === "0") { localStorage.removeItem("FACEMAX_FORCE_PAYWALL"); }
-} catch {}
 // Apply dev-premium override at boot before any UI renders.
 try {
   if (localStorage.getItem("FACEMAX_DEV_PREMIUM") === "1") {
@@ -2564,48 +2137,6 @@ try {
     premiumUntil = u ? (Number(u) || null) : null;
   }
 } catch {}
-// The web build is the preview/testing surface — unlock everything so the full
-// interface is reviewable without a purchase. Real paywall gating stays on the
-// native iOS build (where Capacitor.isNativePlatform() is true).
-try {
-  const _cap = window.Capacitor;
-  const _native = !!(_cap && typeof _cap.isNativePlatform === "function" && _cap.isNativePlatform());
-  // QA: set localStorage FACEMAX_FORCE_PAYWALL="1" to preview the real paywall
-  // flow on the web build (otherwise web stays fully unlocked for review).
-  let _forcePaywall = false;
-  try { _forcePaywall = localStorage.getItem("FACEMAX_FORCE_PAYWALL") === "1"; } catch {}
-  if (!_native && !_forcePaywall) premium = true;
-} catch {}
-
-// Whether the user has GENUINELY unlocked the paid analysis. Unlike `premium`
-// (which is force-enabled on the web preview so the rest of the UI stays
-// reviewable), this is true only for a real unlock: an Apple purchase on the
-// native build, the dev flag, or a simulated unlock tapped on the web paywall.
-// The first-run quiz scan is gated on THIS so the subscription screen always
-// appears before any photo is analyzed — on web and native alike.
-// Robust native-runtime check. window.Capacitor is injected by the native iOS
-// runtime BEFORE any app script runs, whereas window.facemax (native-bridge.js)
-// is created later (its <script> loads after the boot code). At boot we must
-// look at Capacitor directly, or the iOS build is mis-detected as web — which
-// silently force-unlocked premium and skipped the paywall (the long-standing
-// "results show without paying" bug).
-function fmIsNative(){
-  try { if (window.facemax && window.facemax.native) return true; } catch {}
-  try {
-    const cap = window.Capacitor;
-    if (cap && typeof cap.isNativePlatform === "function" && cap.isNativePlatform()) return true;
-    if (cap && typeof cap.getPlatform === "function" && cap.getPlatform() !== "web") return true;
-  } catch {}
-  return false;
-}
-window.fmIsNative = fmIsNative;
-function hasUnlockedAccess(){
-  try { if (localStorage.getItem("FACEMAX_DEV_PREMIUM") === "1") return true; } catch {}
-  try { if (localStorage.getItem("FACEMAX_QUIZ_UNLOCKED") === "1") return true; } catch {}
-  try { if (fmIsNative()) return !!premium; } catch {}
-  return false;
-}
-window.hasUnlockedAccess = hasUnlockedAccess;
 let lastScanScore = 0;
 let lastScanMetrics = null;
 let lastReport = null;
@@ -2878,8 +2409,6 @@ function renderHomeHistory(){
   if (!scanHistory.length) { wrap.classList.add("hidden"); return; }
   wrap.classList.remove("hidden");
   list.innerHTML = scanHistory.slice(0,3).map(renderHistoryItem).join("");
-  const btn = el("homeHistoryShowAll");
-  if (btn) { if (scanHistory.length > 3) { btn.classList.remove("hidden"); } else { btn.classList.add("hidden"); } }
 }
 function renderHomeStats(){
   // Defensive: re-sync from localStorage in case scanHistory in memory got
@@ -2903,18 +2432,10 @@ function renderHomeStats(){
   setText("homeScoreNum", last != null ? String(last) : "—");
   setText("homeScoreLbl", last != null ? "last score" : "Tap below to scan");
 }
-let _profileHistoryExpanded = false;
 function renderProfileHistory(){
   const list = el("profileHistoryList");
-  if (!scanHistory.length) { list.innerHTML = `<div class="li"><div class="li-dot"></div><div><span style="color:var(--muted)">No scans yet — run your first AI scan</span></div></div>`; const btn = el("profileHistoryShowAll"); if (btn) btn.classList.add("hidden"); return; }
-  const items = _profileHistoryExpanded ? scanHistory : scanHistory.slice(0, 3);
-  list.innerHTML = items.map(renderHistoryItem).join("");
-  const btn = el("profileHistoryShowAll");
-  if (btn) { if (scanHistory.length > 3 && !_profileHistoryExpanded) { btn.classList.remove("hidden"); } else { btn.classList.add("hidden"); } }
-}
-function toggleProfileHistoryAll(){
-  _profileHistoryExpanded = true;
-  renderProfileHistory();
+  if (!scanHistory.length) { list.innerHTML = `<div class="li"><div class="li-dot"></div><div><span style="color:var(--muted)">No scans yet — run your first AI scan</span></div></div>`; return; }
+  list.innerHTML = scanHistory.map(renderHistoryItem).join("");
 }
 
 // Maps every reachable screen id to the bottom-tab that should light up.
@@ -2957,8 +2478,6 @@ else document.addEventListener("DOMContentLoaded", wireNavTabPressFeedback);
 window.openScreen = function(id){
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   el(id)?.classList.add("active");
-  // Gender select + capture lock to the viewport height (no page scroll).
-  document.documentElement.classList.toggle("fm-fixed-screen", id === "genderSelect" || id === "capture");
   const tabId = NAV_TAB_FOR_SCREEN[id];
   if (tabId) setActiveNavTab(tabId);
   window.scrollTo(0, 0);
@@ -2971,7 +2490,7 @@ window.openScreen = function(id){
   if (id === "daily") { refreshDailyGreeting && refreshDailyGreeting(); refreshDailyTiles && refreshDailyTiles(); }
 };
 
-window.goUpload = () => { try { if (window.onbState) onbState.viaCapture = false; } catch {} openScreen("upload"); };
+window.goUpload = () => openScreen("upload");
 
 window.showGate = function(title, text){
   el("gateTitle").textContent = title;
@@ -3107,38 +2626,11 @@ window.openTool = async function(tool){
     const data = await res.json();
     const d = data.data || {};
     el("toolSummary").textContent = d.text || "";
-
-    const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-    let stepsHtml = "";
-
-    // v4 (Umax-parity): structured plan with named categories + a realistic
-    // timeline + a "when to see a pro" footer. Backwards-compatible: if the
-    // worker only sent the legacy flat steps[] we fall through and render it.
-    if (d.expected_timeline) {
-      stepsHtml += `<div class="plan-timeline" style="margin:6px 0 14px;padding:10px 14px;border-radius:14px;background:rgba(167,139,250,.10);color:#d4cdf5;font-size:13px;line-height:1.45"><b style="color:#bbb0f3">Expected timeline.</b> ${esc(d.expected_timeline)}</div>`;
-    }
-    if (Array.isArray(d.categories) && d.categories.length) {
-      stepsHtml += d.categories.map(cat => {
-        const steps = (cat && Array.isArray(cat.steps)) ? cat.steps : [];
-        if (!steps.length) return "";
-        return `<div class="tool-sec-hdr" style="margin-top:14px">${esc(cat.label || "")}</div>` + steps.map((s, i) =>
-          `<div class="plan-row"><div class="plan-num">${i+1}</div><div class="plan-body"><span>${esc(s)}</span></div></div>`
-        ).join("");
-      }).join("");
-    } else if (Array.isArray(d.steps) && d.steps.length) {
-      stepsHtml += d.steps.map((s,i) =>
-        `<div class="plan-row"><div class="plan-num">${i+1}</div><div class="plan-body"><span>${esc(s)}</span></div></div>`
-      ).join("");
-    }
-    const footer = d.red_flags || d.realistic_caveat;
-    if (footer) {
-      const footerLabel = d.red_flags ? "When to see a dermatologist" : "Reality check";
-      stepsHtml += `<div class="plan-footnote" style="margin-top:18px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);font-size:12.5px;line-height:1.5;color:#cfc8e9"><b style="color:#e6dffa">${footerLabel}.</b> ${esc(footer)}</div>`;
-    }
-
-    if (stepsHtml) {
+    if (Array.isArray(d.steps) && d.steps.length) {
       el("toolStepsHdr").style.display = "";
-      el("toolSteps").innerHTML = stepsHtml;
+      el("toolSteps").innerHTML = d.steps.map((s,i) =>
+        `<div class="plan-row"><div class="plan-num">${i+1}</div><div class="plan-body"><span>${s}</span></div></div>`
+      ).join("");
     } else {
       el("toolStepsHdr").style.display = "none";
       el("toolSteps").innerHTML = "";
@@ -3288,7 +2780,6 @@ window.handleProfileAvatarPick = async function(file){
 };
 
 function renderProfileScreen(){
-  _profileHistoryExpanded = false;
   const uid = currentUserId();
   el("profileName").textContent = "You";
   el("profileUid").textContent = "ID: " + uid;
@@ -3747,36 +3238,12 @@ document.addEventListener("visibilitychange", () => {
 // canvas — dots appear progressively, ending in the final overlay. Gives the
 // user a visceral "AI is reading my face" moment instead of a static photo +
 // sweep beam.
-// Map MediaPipe's normalized landmarks (relative to the FULL source image)
-// onto the on-screen <img>, accounting for its `object-fit`. The scan/result
-// photos use `object-fit:cover` inside a round frame, which crops the image —
-// so a naive `lm.x * width` mapping drifts off the face. This reproduces the
-// browser's cover/contain crop math so dots land exactly on the features.
-function landmarkProjector(img, ox, oy, w, h){
-  const nW = img.naturalWidth || w, nH = img.naturalHeight || h;
-  let fit = "fill";
-  try { fit = getComputedStyle(img).objectFit || "fill"; } catch {}
-  if ((fit === "cover" || fit === "contain") && nW > 0 && nH > 0) {
-    const scale = (fit === "cover") ? Math.max(w / nW, h / nH) : Math.min(w / nW, h / nH);
-    const dispW = nW * scale, dispH = nH * scale;
-    const offX = ox + (w - dispW) / 2, offY = oy + (h - dispH) / 2;
-    return (lm) => ({ x: offX + lm.x * dispW, y: offY + lm.y * dispH });
-  }
-  return (lm) => ({ x: ox + lm.x * w, y: oy + lm.y * h });
-}
-
 let _liveRevealRaf = null;
 function stopLiveLandmarkReveal(){
   if (_liveRevealRaf) { cancelAnimationFrame(_liveRevealRaf); _liveRevealRaf = null; }
 }
 function animateLandmarkReveal(imgId, canvasId, durationMs, lmsOverride){
   stopLiveLandmarkReveal();
-  // White landmark dots removed per user request; the scan bars are the only
-  // analysis effect now. Clear any leftover canvas and skip drawing.
-  const c0 = el(canvasId);
-  if (c0) { try { const cx = c0.getContext("2d"); if (cx) cx.clearRect(0, 0, c0.width, c0.height); } catch {} }
-  return;
-  // eslint-disable-next-line no-unreachable
   const img = el(imgId), canvas = el(canvasId);
   const lms = lmsOverride || faceLandmarks;
   if (!img || !canvas || !lms || !lms.length) return;
@@ -3806,7 +3273,6 @@ function animateLandmarkReveal(imgId, canvasId, durationMs, lmsOverride){
     const ox = imgRect.left - parentRect.left;
     const oy = imgRect.top - parentRect.top;
     const w = imgRect.width, h = imgRect.height;
-    const proj = landmarkProjector(img, ox, oy, w, h);
     const target = Math.floor(t * order.length);
     ctx.shadowColor = "rgba(167,139,250,.85)";
     ctx.shadowBlur = 6;
@@ -3814,9 +3280,8 @@ function animateLandmarkReveal(imgId, canvasId, durationMs, lmsOverride){
     for (let i = 0; i < target; i++) {
       const lm = lms[order[i]];
       if (!lm) continue;
-      const P = proj(lm);
       ctx.beginPath();
-      ctx.arc(P.x, P.y, 1.7, 0, Math.PI * 2);
+      ctx.arc(ox + lm.x * w, oy + lm.y * h, 1.7, 0, Math.PI * 2);
       ctx.fill();
     }
     if (t < 1) {
@@ -3888,92 +3353,22 @@ window.changePhoto = function(){
   selectedImageData = "";
 };
 
-/* ===== Loading screen: 6 long animated metric loading bars =====
- * While the photo is being analyzed by the AI, each of the six metric bars
- * climbs asymptotically toward a soft cap. The moment the real per-metric
- * scores land, finishScanBars() locks every bar to its true value, holds for
- * a beat, then hands off to the result screen. */
-const SCAN_BAR_IDS = [
-  ["jawline",    "loadBarJawline",    "loadPctJawline"],
-  ["cheekbones", "loadBarCheekbones", "loadPctCheekbones"],
-  ["eyes",       "loadBarEyes",       "loadPctEyes"],
-  ["lips",       "loadBarLips",       "loadPctLips"],
-  ["nose",       "loadBarNose",       "loadPctNose"],
-  ["skin",       "loadBarSkin",       "loadPctSkin"],
-];
-let _scanBarsRAF = null;
-let _scanBarsState = null;
-
-function scanBarColor(v){
-  if (v >= 75) return "linear-gradient(90deg,#4ADE80,#22C55E)";
-  if (v >= 60) return "linear-gradient(90deg,#A3E635,#4ADE80)";
-  if (v >= 45) return "linear-gradient(90deg,#FBBF24,#A3E635)";
-  if (v >= 30) return "linear-gradient(90deg,#FB923C,#FBBF24)";
-  return "linear-gradient(90deg,#EF4444,#FB923C)";
-}
-
-function startScanBars(){
-  stopScanBars();
-  const bars = SCAN_BAR_IDS.map((row, i) => ({
-    key: row[0],
-    fill: el(row[1]),
-    pct: el(row[2]),
-    delay: 100 + i * 190,
-    softCap: 80 + Math.random() * 11,
-    cur: 0,
-    target: null,
-  }));
-  bars.forEach(b => {
-    if (b.fill) { b.fill.style.width = "0%"; b.fill.style.background = ""; }
-    if (b.pct) b.pct.textContent = "0%";
-  });
-  _scanBarsState = { t0: performance.now(), bars };
-  function frame(now){
-    const st = _scanBarsState; if (!st) return;
-    for (const b of st.bars){
-      const elapsed = now - st.t0 - b.delay;
-      if (b.target != null){
-        b.cur += (b.target - b.cur) * 0.16;
-        if (Math.abs(b.target - b.cur) < 0.4) b.cur = b.target;
-        if (b.fill) b.fill.style.background = scanBarColor(b.cur);
-      } else if (elapsed > 0){
-        b.cur += (b.softCap - b.cur) * 0.022;
-      }
-      if (b.fill) b.fill.style.width = b.cur.toFixed(1) + "%";
-      if (b.pct) b.pct.textContent = Math.round(b.cur) + "%";
+function animateScanSteps(){
+  let current = 0;
+  const tick = setInterval(() => {
+    if (current > 0) {
+      el("step"+current+"dot").className = "step-dot done";
+      el("step"+current+"dot").innerHTML = `<svg viewBox="0 0 24 24"><path d="m4 12 5 5L20 6" stroke="currentColor" fill="none"/></svg>`;
+      el("step"+current+"txt").className = "step-txt done";
     }
-    _scanBarsRAF = requestAnimationFrame(frame);
-  }
-  _scanBarsRAF = requestAnimationFrame(frame);
-}
-
-function stopScanBars(){
-  if (_scanBarsRAF) cancelAnimationFrame(_scanBarsRAF);
-  _scanBarsRAF = null;
-  _scanBarsState = null;
-}
-
-/* Lock the loading bars onto the real per-metric values, hold, then run cb. */
-function finishScanBars(values, cb){
-  const st = _scanBarsState;
-  if (!st){ if (cb) setTimeout(cb, 0); return; }
-  st.bars.forEach(b => {
-    const raw = values && isFinite(values[b.key]) ? values[b.key] : b.cur;
-    b.target = Math.max(0, Math.min(100, raw));
-  });
-  setTimeout(() => {
-    const s2 = _scanBarsState;
-    if (s2){
-      s2.bars.forEach(b => {
-        if (b.target != null){
-          b.cur = b.target;
-          if (b.fill){ b.fill.style.width = b.cur + "%"; b.fill.style.background = scanBarColor(b.cur); }
-          if (b.pct) b.pct.textContent = Math.round(b.cur) + "%";
-        }
-      });
-    }
-    setTimeout(() => { stopScanBars(); if (cb) cb(); }, 560);
+    current++;
+    if (current <= 4) {
+      el("step"+current+"dot").className = "step-dot active";
+      el("step"+current+"dot").textContent = "·";
+      el("step"+current+"txt").className = "step-txt active";
+    } else clearInterval(tick);
   }, 700);
+  return () => clearInterval(tick);
 }
 
 function animateRing(ringEl, numEl, rankEl, rankTextEl, archBadgeEl, score, archetypeOverride){
@@ -4018,17 +3413,6 @@ window.startScan = async function(){
   // gates the scan rather than the photo picker so the user sees their
   // photo confirmed first, then a single quick question.
   if (!ensureGenderBeforeScan(() => window.startScan())) return;
-  // Quiz funnel is pay-first: never run the analysis (and never send the photo
-  // to the AI / OpenRouter) until the user has unlocked. Gated on
-  // hasUnlockedAccess() (NOT `premium`) so the subscription screen shows even on
-  // the web preview where `premium` is force-true for review. Marks the scan as
-  // pending and resumes after a successful purchase (see quizResumePendingScan).
-  // No payment => no analysis.
-  if (!hasUnlockedAccess()) {
-    if (window.onbState) onbState.pendingScan = true;
-    quizShowPaywall();
-    return;
-  }
   // Free-scan gate: stop here if the user has exhausted their free scans and is not premium.
   if (!premium && !canScanFree()) { showFreeLimitGate(); return; }
   el("loadingImg").src = selectedImageData;
@@ -4039,9 +3423,13 @@ window.startScan = async function(){
   ["resultArchetype","reportArchetype"].forEach(id => {
     const n = el(id); if (n) n.textContent = "Analyzing";
   });
+  [1,2,3,4].forEach(i => {
+    el("step"+i+"dot").className = "step-dot";
+    el("step"+i+"dot").textContent = "·";
+    el("step"+i+"txt").className = "step-txt";
+  });
   openScreen("loading");
-  startScanBars();
-  try { if (typeof onbAnimateUpload === "function") onbAnimateUpload(); } catch {}
+  const stopSteps = animateScanSteps();
 
   let faceBlendshapes = null;
   try {
@@ -4057,26 +3445,26 @@ window.startScan = async function(){
     console.warn("MediaPipe error", err);
     faceLandmarks = null;
     try { showToast("Could not analyze photo. Please try again."); } catch {}
-    stopScanBars();
-    if (!onbScanFail()) openScreen("upload");
+    stopSteps();
+    openScreen("upload");
     return;
   }
   // Hard guard #1: MediaPipe found 0 landmark sets. Non-face photos
   // (flowers, pets, screenshots) get rejected here. App Store reject risk
   // under Guideline 5.1.1 / 4.0 if a misleading score is ever shown.
   if (!faceLandmarks || !faceLandmarks.length) {
-    stopScanBars();
+    stopSteps();
     try { showToast("Couldn't detect a face. Use a clear, front-facing portrait."); } catch {}
-    if (!onbScanFail()) openScreen("upload");
+    openScreen("upload");
     return;
   }
   // Hard guard #2: even when MediaPipe returns landmarks, the result can be
   // a false positive on textured images (flowers can trigger detection at
   // low confidence). Run a geometry + blendshape sanity check.
   if (!isPlausibleFace(faceLandmarks, faceBlendshapes)) {
-    stopScanBars();
+    stopSteps();
     try { showToast("That doesn't look like a clear portrait. Try a well-lit, front-facing photo."); } catch {}
-    if (!onbScanFail()) openScreen("upload");
+    openScreen("upload");
     return;
   }
   // Hard guard #3: photo quality (head tilt, smile, closed eyes).
@@ -4085,50 +3473,46 @@ window.startScan = async function(){
   // tailored modal so they know exactly what to fix.
   const pq = assessPhotoQuality(faceLandmarks, faceBlendshapes);
   if (!pq.ok) {
-    stopScanBars();
+    stopSteps();
     openPhotoQualityModal(pq.reason);
     return;
   }
-  // MediaPipe's on-device FaceLandmarker (Hard guard #1) + isPlausibleFace's
-  // geometry and blendshape gate (Hard guard #2) reject non-face inputs before
-  // we get here, so only a validated, front-facing portrait is ever sent on to
-  // the AI vision pass below.
+  // PRIVACY: server-side face-check round-trip removed. MediaPipe's
+  // on-device FaceLandmarker (Hard guard #1) + isPlausibleFace's geometry
+  // and blendshape gate (Hard guard #2) already reject non-face inputs
+  // before we get here, so the photo never leaves the device for the free
+  // scan. This is required for the App Store privacy declaration that the
+  // app does not transmit user photos to any third-party AI service for
+  // the score generation.
   // Kick off the progressive landmark reveal on the loading canvas as soon as
-  // detection finishes. Runs in parallel with the loading-bar animation.
+  // detection finishes. Runs in parallel with the remaining step animation.
   try { animateLandmarkReveal("loadingImg", "loadingCanvas", 1300); } catch {}
+  stopSteps();
+  [1,2,3,4].forEach(i => {
+    el("step"+i+"dot").className = "step-dot done";
+    el("step"+i+"dot").innerHTML = `<svg viewBox="0 0 24 24"><path d="m4 12 5 5L20 6" stroke="currentColor" fill="none"/></svg>`;
+    el("step"+i+"txt").className = "step-txt done";
+  });
+  await new Promise(r => setTimeout(r, 500));
 
-  // On-device MediaPipe metrics — used as the fallback if the AI pass fails.
+  // Compute the on-device metrics ONCE and feed them into both the overall
+  // score and the per-metric bars. This is the real MediaPipe-driven score:
+  // symmetry, jawline, cheekbones, eyes, lips, nose, harmony, skin are
+  // derived from the 478 facial landmarks (see computeFaceMetrics) and
+  // combined into a single 0..100 figure by generateBaseScore.
   const computedMetrics = computeFaceMetrics(faceLandmarks) || null;
+  lastScanMetrics = computedMetrics;
+  lastScanScore = generateBaseScore(faceLandmarks, computedMetrics);
   const detectedShape = detectFaceShape(faceLandmarks) || null;
-  const mpScore = generateBaseScore(faceLandmarks, computedMetrics);
-
-  // Real AI pass: send the photo to Gemini Vision so it scores the six visible
-  // features directly. MediaPipe already validated this is a genuine front-
-  // facing face (guards #1-#3); Gemini now does the actual aesthetic read.
-  // If the AI call fails we transparently fall back to the MediaPipe numbers.
-  const ai = await fetchGeminiScan(selectedImageData, mpScore, computedMetrics).catch(() => ({ hardFail: true, reason: "exception" }));
-  // Full analysis failure (worker already retried up to 3x): offer a Retry dialog
-  // instead of silently showing on-device fallback numbers.
-  if (ai && ai.hardFail) {
-    stopScanBars();
-    showAnalysisError();
-    return;
-  }
-  const finalMetrics = (ai && ai.metrics) ? ai.metrics : computedMetrics;
-  const finalScore = (ai && isFinite(ai.overall)) ? ai.overall : mpScore;
-  const aiReport = (ai && ai.report) ? ai.report : null;
-
-  lastScanMetrics = finalMetrics;
-  lastScanScore = finalScore;
-  if (aiReport) { lastReport = aiReport; try { localStorage.setItem("facemax_last_report", JSON.stringify(aiReport)); } catch {} }
 
   // Re-check premium so we don't flash the Free results page to a paying user
   // who just bought right before scanning.
   await checkPremium(false).catch(() => {});
 
-  // Save to history with a small thumbnail + detected face shape.
+  // Save to history with a small thumbnail + detected face shape
+  // (used by AI tools / compare in this and future sessions).
   const thumb = await makeThumbnail(selectedImageData, 240).catch(() => null);
-  saveToHistory(lastScanScore, thumb, { shape: detectedShape, metrics: finalMetrics });
+  saveToHistory(lastScanScore, thumb, { shape: detectedShape, metrics: computedMetrics });
   renderHomeHistory();
   renderHomeStats();
 
@@ -4139,92 +3523,14 @@ window.startScan = async function(){
     renderFreeScanIndicator();
   }
 
-  // Lock the loading bars onto the real per-metric scores, then reveal the
-  // result screen so the numbers carry straight over.
-  finishScanBars(finalMetrics, () => {
-    onbState.viaCapture = false;
-    onbState.pendingScan = false;
-    paintResultV2(finalScore, finalMetrics, aiReport);
-    openScreen("result");
-    applyPremiumToResult();
-  });
+  // v2: everyone sees the compact result screen first (with the new 6-ring
+  // layout). Premium users then tap "Get full AI report" to go deeper, the
+  // same way Hiface / Looksmax show a summary screen and gate the long-form
+  // copy behind a separate CTA.
+  paintResultV2(lastScanScore, computedMetrics);
+  openScreen("result");
+  applyPremiumToResult();
 };
-
-/* Analysis-failure dialog. The worker retries OpenRouter up to 3x; if it still
- * fails, /api/full-report returns a hard error and we surface this modal with a
- * Retry button that re-runs the whole scan (the selected photo is still loaded). */
-function showAnalysisError(){
-  const btn = el("aiErrRetryBtn");
-  if (btn){ btn.disabled = false; const s = btn.querySelector("span"); if (s) s.textContent = "Try again"; }
-  const m = el("aiErrModal"); if (m) m.classList.add("show");
-}
-window.showAnalysisError = showAnalysisError;
-function closeAnalysisError(){
-  const m = el("aiErrModal"); if (m) m.classList.remove("show");
-  try { openScreen("upload"); } catch {}
-}
-window.closeAnalysisError = closeAnalysisError;
-function retryAnalysis(){
-  const m = el("aiErrModal"); if (m) m.classList.remove("show");
-  try { if (typeof window.startScan === "function") window.startScan(); } catch (e) { showAnalysisError(); }
-}
-window.retryAnalysis = retryAnalysis;
-
-/* Send the selfie to the worker's Gemini-vision endpoint and normalize the
- * response into { overall, metrics:{jawline,cheekbones,eyes,lips,nose,skin},
- * report }. Returns metrics:null (so the caller falls back to MediaPipe) when
- * Gemini did not actually analyze the photo (missing key / API error). */
-async function fetchGeminiScan(imageDataUrl, mpScore, mpMetrics){
-  let aiImage = null;
-  try { aiImage = await makeThumbnail(imageDataUrl, 768); } catch {}
-  const body = {
-    user_id: currentUserId(),
-    image: aiImage || imageDataUrl,
-    score: mpScore,
-    metrics: mpMetrics || {},
-    gender: (typeof currentGender === "function") ? currentGender() : null,
-    visual_scan: true
-  };
-  let res;
-  try {
-    res = await fetch(API_BASE + "/api/full-report", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body)
-    });
-  } catch (e) {
-    return { overall: null, metrics: null, report: null, hardFail: true, reason: "network" };
-  }
-  if (!res.ok) return { overall: null, metrics: null, report: null, hardFail: true, status: res.status };
-  const data = await res.json().catch(() => null);
-  const report = data && (data.data || data.report);
-  // AI counts as a real analysis when the worker returns a non-fallback source
-  // (openrouter / gemini / openai). Anything else means it didn't analyze.
-  const aiOk = !!(data && data.ok !== false && data.source && data.source !== "fallback" && data.source !== "error");
-  if (!report || !aiOk) {
-    return { overall: null, metrics: null, report: report || null, source: data && data.source, hardFail: true };
-  }
-  const sc = report.scores || {};
-  const mm = mpMetrics || {};
-  const pick = (v, fb) => isFinite(v) ? Math.max(1, Math.min(100, Math.round(v))) : (isFinite(fb) ? Math.round(fb) : 70);
-  const metrics = {
-    jawline:    pick(sc.jawline,    mm.jawline),
-    cheekbones: pick(sc.cheekbones, mm.cheekbones),
-    eyes:       pick(sc.eye_area,   mm.eyes),
-    lips:       pick(sc.lips,       mm.lips),
-    nose:       pick(sc.nose,       mm.nose),
-    skin:       pick(sc.skin,       mm.skin),
-  };
-  // The model sometimes returns per-feature sub-scores on a 0-10 scale while the
-  // overall stays 0-100. When every feature looks like a 0-10 value, rescale to
-  // 0-100 so the result bars and numbers aren't rendered nearly empty.
-  const mScores = Object.keys(metrics).map(k => metrics[k]).filter(n => isFinite(n) && n > 0);
-  if (mScores.length && Math.max.apply(null, mScores) <= 10) {
-    for (const k in metrics) metrics[k] = Math.max(1, Math.min(100, Math.round(metrics[k] * 10)));
-  }
-  const overall = isFinite(report.overall_score) ? Math.max(1, Math.min(100, Math.round(report.overall_score))) : mpScore;
-  return { overall, metrics, report, source: "gemini" };
-}
 
 /* === v2 result screen renderer ===
  * Populates the new one-screen result layout:
@@ -4235,17 +3541,9 @@ async function fetchGeminiScan(imageDataUrl, mpScore, mpMetrics){
  * The legacy "free results / locked premium" two-card layout was replaced
  * by this single compact view inspired by Hiface / Looksmax-style reports.
  */
-function paintResultV2(score, computedMetrics, aiReport){
+function paintResultV2(score, computedMetrics){
   const m = computedMetrics || {};
-  let s = Math.max(0, Math.min(100, Math.round(Number(score) || 0)));
-  if (!s) {
-    /* Headline must never read 0/100. If the per-photo score is missing
-     * (e.g. AI fell back and the on-device base score came back empty),
-     * derive it from the six visible metrics. */
-    const vals = ["jawline","cheekbones","eyes","lips","nose","skin"]
-      .map(k => Number(m[k])).filter(n => isFinite(n) && n > 0);
-    s = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : 70;
-  }
+  const s = Math.max(0, Math.min(100, Math.round(Number(score) || 0)));
 
   /* Archetype badge + PSL mini */
   const badge = el("resultArchBadge");
@@ -4267,128 +3565,38 @@ function paintResultV2(score, computedMetrics, aiReport){
     if (marker) marker.style.left = s + "%";
   }, 80);
 
-  /* Animate the 6 metric bars */
+  /* Animate the 6 ring tiles. circumference = 2*pi*r where r=15 → ~94.25 */
   const CIRC = 94.2478;
   const tiles = [
-    ["ringJawline",    "metricJawlineVal",    m.jawline    ?? 70, "metricJawlineSub",    "Lower face",  "barJawline"],
-    ["ringCheekbones", "metricCheekbonesVal", m.cheekbones ?? 70, "metricCheekbonesSub", "Midface",     "barCheekbones"],
-    ["ringEyes",       "metricEyesVal",       m.eyes       ?? 70, "metricEyesSub",       "Hunter eyes", "barEyes"],
-    ["ringLips",       "metricLipsVal",       m.lips       ?? 70, "metricLipsSub",       "Fullness",    "barLips"],
-    ["ringNose",       "metricNoseVal",       m.nose       ?? 70, "metricNoseSub",       "Proportion",  "barNose"],
-    ["ringSkin",       "metricSkinVal",       m.skin       ?? 70, "metricSkinSub",       "Quality",     "barSkin"],
+    ["ringJawline",    "metricJawlineVal",    m.jawline    ?? 70, "metricJawlineSub",    "Lower face"],
+    ["ringCheekbones", "metricCheekbonesVal", m.cheekbones ?? 70, "metricCheekbonesSub", "Midface"],
+    ["ringEyes",       "metricEyesVal",       m.eyes       ?? 70, "metricEyesSub",       "Hunter eyes"],
+    ["ringLips",       "metricLipsVal",       m.lips       ?? 70, "metricLipsSub",       "Fullness"],
+    ["ringNose",       "metricNoseVal",       m.nose       ?? 70, "metricNoseSub",       "Proportion"],
+    ["ringSkin",       "metricSkinVal",       m.skin       ?? 70, "metricSkinSub",       "Quality"],
   ];
-  function barColor(v){
-    if(v>=75) return "linear-gradient(90deg,#4ADE80,#22C55E)";
-    if(v>=60) return "linear-gradient(90deg,#A3E635,#4ADE80)";
-    if(v>=45) return "linear-gradient(90deg,#FBBF24,#A3E635)";
-    if(v>=30) return "linear-gradient(90deg,#FB923C,#FBBF24)";
-    return "linear-gradient(90deg,#EF4444,#FB923C)";
-  }
   setTimeout(() => {
-    for (const [ringId, valId, raw, subId, subText, barId] of tiles) {
+    for (const [ringId, valId, raw, subId, subText] of tiles) {
       const ring = el(ringId);
       const val  = el(valId);
       const sub  = el(subId);
-      const bar  = el(barId);
-      const v = Math.round(Math.max(1, Math.min(99, raw)));
+      const v = Math.round(Math.max(35, Math.min(96, raw)));
       if (val) val.textContent = v;
       if (sub) sub.textContent = subText;
       if (ring) {
         const off = CIRC * (1 - v / 100);
         ring.style.strokeDashoffset = off;
-      }
-      if (bar) {
-        bar.style.width = v + "%";
-        bar.style.background = barColor(v);
+        // colour the ring red→yellow→green based on score
+        let c = "#A78BFA";
+        if (v < 45)      c = "#ef4444";
+        else if (v < 60) c = "#fb923c";
+        else if (v < 72) c = "#fbbf24";
+        else if (v < 82) c = "#a3e635";
+        else             c = "#4ade80";
+        ring.style.stroke = c;
       }
     }
   }, 240);
-
-  /* Archetype + AI summary. With a real Gemini photo report we apply it
-   * directly; otherwise (e.g. a reopened history result with no fresh photo)
-   * we request a text-only report so there's still a description. */
-  if (aiReport) {
-    applyAiReportToResult(aiReport, s);
-  } else {
-    fetchTextReportForResult(s, m);
-  }
-}
-
-/* Insert/update the AI-insight line under the score bar. */
-function setResultInsight(text){
-  let insightBox = el('aiInsightBlock');
-  if (!insightBox) {
-    const scoreBar = document.querySelector('#result .score-bar-wrap');
-    if (scoreBar && scoreBar.parentNode) {
-      insightBox = document.createElement('div');
-      insightBox.id = 'aiInsightBlock';
-      insightBox.className = 'ai-insight-block';
-      insightBox.innerHTML = '<span class="ai-insight-label">AI insight</span><span id="aiInsightText"></span>';
-      scoreBar.parentNode.insertBefore(insightBox, scoreBar.nextSibling);
-    }
-  }
-  if (insightBox) insightBox.classList.remove('is-loading');
-  const t = el('aiInsightText'); if (t) t.textContent = text || '';
-}
-
-function _resultBadgeEl(){
-  const x = el("resultArchBadge");
-  if (!x) return null;
-  return x.classList && x.classList.contains('arch-badge-v2') ? x : (x.closest && x.closest('.arch-badge-v2'));
-}
-
-/* Apply a real Gemini photo report to the result screen. */
-function applyAiReportToResult(report, score){
-  try {
-    if (report.archetype) {
-      const badge = el("resultArchBadge");
-      if (badge) applyArchetype(badge, score, report.archetype);
-      const an = el("resultArchetype"); if (an) an.textContent = report.archetype;
-    }
-    setResultInsight(report.summary || 'Tap "Get full AI report" for the deep breakdown.');
-    document.querySelectorAll('#result .metric-tile, #result .metric-row').forEach(t => t.classList.remove('is-loading'));
-    const b = _resultBadgeEl(); if (b) { b.classList.remove('is-thinking'); b.classList.remove('is-loading'); }
-    try { localStorage.setItem("facemax_last_report", JSON.stringify(report)); } catch {}
-    if (typeof lastReport !== 'undefined') lastReport = report;
-  } catch(e) { console.warn('apply ai report fail', e); }
-}
-
-/* Legacy text-only enrichment path (no fresh photo to analyze). */
-function fetchTextReportForResult(score, metrics){
-  try {
-    document.querySelectorAll('#result .metric-tile, #result .metric-row').forEach(t => t.classList.add('is-loading'));
-    const b = _resultBadgeEl(); if (b) b.classList.add('is-thinking');
-    setResultInsight('Reading your features…');
-    const payload = {
-      user_id: currentUserId(),
-      score: score,
-      face_shape: (typeof scanHistory !== 'undefined' && scanHistory[0] && scanHistory[0].shape) || null,
-      metrics: metrics || {},
-      visual_scan: false,
-      mediapipe: true
-    };
-    fetch(API_BASE + "/api/full-report", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload)
-    }).then(res => res.ok ? res.json() : null).then(data => {
-      const report = data && (data.data || data.report);
-      document.querySelectorAll('#result .metric-tile, #result .metric-row').forEach(t => t.classList.remove('is-loading'));
-      const bb = _resultBadgeEl(); if (bb) bb.classList.remove('is-thinking');
-      if (report) {
-        if (report.archetype && el("resultArchetype")) el("resultArchetype").textContent = report.archetype;
-        setResultInsight(report.summary || 'Tap "Get full AI report" for the deep breakdown.');
-        try { localStorage.setItem("facemax_last_report", JSON.stringify(report)); } catch {}
-        if (typeof lastReport !== 'undefined') lastReport = report;
-      } else {
-        setResultInsight('Tap "Get full AI report" for the deep breakdown.');
-      }
-    }).catch(err => {
-      console.warn('full-report fetch fail', err);
-      document.querySelectorAll('#result .metric-tile, #result .metric-row').forEach(t => t.classList.remove('is-loading'));
-      setResultInsight('Tap "Get full AI report" for the deep breakdown.');
-    });
-  } catch(e) { console.warn('text enrichment threw', e); }
 }
 
 /* Defense-in-depth sanity check on what MediaPipe returns. Even with
@@ -4465,13 +3673,16 @@ function isPlausibleFace(landmarks, blendshapes){
       if (s > maxScore) maxScore = s;
       if (s >= 0.05) supportCount++;
     }
-    // Relaxed so real selfies are never falsely rejected. The geometry checks
-    // above (vertical ordering, eye spacing, bbox, aspect) already gate out
-    // non-face textures; blendshapes are only a light secondary signal here.
-    if (maxScore < 0.18 && supportCount < 2) return false;
+    // Tightened from 0.30/3 — textured non-face images (flowers, fabric,
+    // patterns) can squeak past 0.30 peak with 3 supporting shapes. Real
+    // selfies hit 0.50+ peaks with 5+ supporting shapes trivially.
+    if (maxScore < 0.50) return false;
+    if (supportCount < 5) return false;
+  } else {
+    // No blendshapes attached — reject. We tightened MediaPipe setup to
+    // always emit blendshapes; missing them means we don't trust the call.
+    return false;
   }
-  // If no blendshapes are attached we trust the geometry checks above rather
-  // than rejecting — some MediaPipe builds omit them on valid faces.
   return true;
 }
 
@@ -4505,7 +3716,7 @@ function assessPhotoQuality(landmarks, blendshapes){
   const dy = rEye.y - lEye.y;
   const dxAbs = Math.abs(rEye.x - lEye.x);
   const rollDeg = Math.abs(Math.atan2(dy, dxAbs || 1e-6) * 180 / Math.PI);
-  if (rollDeg > 45) return { ok:false, reason:"tilt" };
+  if (rollDeg > 32) return { ok:false, reason:"tilt" };
 
   // Yaw: how far is the nose from the horizontal midpoint of the face?
   // Relaxed to 22% — normal candid photos easily hit 14-18% even when
@@ -4514,7 +3725,7 @@ function assessPhotoQuality(landmarks, blendshapes){
   const faceMid = (lFace.x + rFace.x) / 2;
   const faceW = Math.abs(rFace.x - lFace.x);
   const yawOffset = Math.abs(noseTip.x - faceMid) / (faceW || 1);
-  if (yawOffset > 0.35) return { ok:false, reason:"tilt" };
+  if (yawOffset > 0.22) return { ok:false, reason:"tilt" };
 
   // Blendshape-based checks: MediaPipe FaceLandmarker emits 52 blendshapes
   // including eyeBlinkLeft, eyeBlinkRight, mouthSmileLeft/Right, jawOpen.
@@ -4526,16 +3737,16 @@ function assessPhotoQuality(landmarks, blendshapes){
 
     const blinkL = m.eyeBlinkLeft  || 0;
     const blinkR = m.eyeBlinkRight || 0;
-    // Reject only when both eyes are essentially fully shut.
-    if (blinkL > 0.92 && blinkR > 0.92) return { ok:false, reason:"eyesClosed" };
+    // Both eyes near-fully-closed: blink score > 0.8 each (was 0.55).
+    if (blinkL > 0.8 && blinkR > 0.8) return { ok:false, reason:"eyesClosed" };
 
     const smileL = m.mouthSmileLeft  || 0;
     const smileR = m.mouthSmileRight || 0;
     const jawOpen = m.jawOpen        || 0;
-    // Reject only on an extreme toothy grin or a wide-open mouth so normal
-    // relaxed/slightly-smiling selfies always pass.
-    if ((smileL + smileR) / 2 > 0.9) return { ok:false, reason:"smile" };
-    if (jawOpen > 0.7)               return { ok:false, reason:"smile" };
+    // Reject only on a very wide toothy grin or an actually-open mouth.
+    // Was: 0.45 / 0.40 — far too strict.
+    if ((smileL + smileR) / 2 > 0.75) return { ok:false, reason:"smile" };
+    if (jawOpen > 0.55)               return { ok:false, reason:"smile" };
   }
 
   return { ok:true, reason:null };
@@ -4590,7 +3801,7 @@ function openPhotoQualityModal(reason){
 }
 window.closePhotoQualityModal = function(){
   const m = el("pqModal"); if (m) m.classList.remove("show");
-  try { if (!onbScanFail()) openScreen("upload"); } catch {}
+  try { openScreen("upload"); } catch {}
 };
 
 // REAL composite score from MediaPipe 478 landmarks. Same face -> same
@@ -4633,12 +3844,6 @@ function loadImage(src){
 }
 
 function drawOverlay(imgId, canvasId){
-  // White landmark dots/mesh removed per user request (they could land
-  // slightly off the face). Clear any canvas and draw nothing.
-  const canvas0 = el(canvasId);
-  if (canvas0) { try { const c = canvas0.getContext("2d"); if (c) c.clearRect(0, 0, canvas0.width, canvas0.height); } catch {} }
-  return false;
-  // eslint-disable-next-line no-unreachable
   const img = el(imgId); const canvas = el(canvasId);
   if (!img || !canvas || !faceLandmarks || !faceLandmarks.length) return false;
   const parentRect = canvas.parentElement.getBoundingClientRect();
@@ -4655,8 +3860,7 @@ function drawOverlay(imgId, canvasId){
   const ox = imgRect.left - parentRect.left;
   const oy = imgRect.top - parentRect.top;
   const w = imgRect.width, h = imgRect.height;
-  const proj = landmarkProjector(img, ox, oy, w, h);
-  const p = i => faceLandmarks[i] ? proj(faceLandmarks[i]) : null;
+  const p = i => faceLandmarks[i] ? { x: ox + faceLandmarks[i].x * w, y: oy + faceLandmarks[i].y * h } : null;
   const lines = [
     [10,338],[338,297],[297,332],[332,284],[284,251],[251,389],[389,356],[356,454],
     [10,109],[109,67],[67,103],[103,54],[54,21],[21,162],[162,127],[127,234],
@@ -4932,8 +4136,7 @@ const PHOTO_COACH_TIPS = [
 ];
 window.addEventListener("resize", () => setTimeout(drawAllOverlays, 150));
 
-function renderReportMetrics(root, scores, reasons){
-  reasons = reasons || {};
+function renderReportMetrics(root, scores){
   const ICONS = {
     jawline:`<svg viewBox="0 0 24 24"><path d="M5 8c0 7 4 11 7 11s7-4 7-11"/><path d="M5 8h14"/></svg>`,
     skin:`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M8 12h8"/></svg>`,
@@ -4954,20 +4157,15 @@ function renderReportMetrics(root, scores, reasons){
   // Hair was removed from the core metric set in v3 — MediaPipe doesn't
   // analyze hair texture / volume, so showing a "Hair" sub-score was
   // misleading. Filter it out even if upstream worker still emits it.
-  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   root.innerHTML = Object.entries(scores || {})
     .filter(([k]) => k !== "hair")
     .map(([k, v]) => {
       const val = Math.round(Math.max(0, Math.min(100, v)));
-      // Skin & jawline carry a short "why this score" explanation from the
-      // analysis so the sub-score is never a bare number (Umax-style).
-      const why = (k === "skin" || k === "jawline") ? String(reasons[k] || "").trim() : "";
       return `<div class="metric-row">
         <div class="metric-ico">${ICONS[k] || ICONS.harmony}</div>
         <div class="metric-body">
           <div class="metric-label">${NAMES[k] || k}</div>
           <div class="metric-bar"><div class="metric-bar-fill" data-score="${val}" style="width:${val}%"></div></div>
-          ${why ? `<div class="metric-why">${esc(why)}</div>` : ""}
         </div>
         <div class="metric-val">${val}</div>
       </div>`;
@@ -5041,19 +4239,6 @@ window.openReport = async function(silent){
   if (!silent) openScreen("report");
   el("report").classList.add("report-loading");
   el("reportImg").src = selectedImageData;
-
-  // If we already have a report from the original scan (which DID send the
-  // photo to the vision model, so its skin/jawline scores carry the real
-  // "why this score" explanation), render it from cache immediately. Re-
-  // fetching the metrics-only report here used to overwrite the vision
-  // analysis with a degraded text-only one, which made the same scan show
-  // different numbers / generic captions on every re-open.
-  if (lastReport && (lastReport.scores || lastReport.overall_score)) {
-    try { renderReport(lastReport, "cache"); } catch (e) { console.warn(e); }
-    el("report").classList.remove("report-loading");
-    return;
-  }
-
   el("reportScoreNum").textContent = "--";
   el("reportSummary").innerHTML = 'AI is analyzing your photo<span class="dots"><span></span><span></span><span></span></span>';
   el("reportMetrics").innerHTML =
@@ -5108,7 +4293,7 @@ function renderReport(report, source){
   el("reportSummary").textContent = report.summary || "Your full breakdown is ready.";
   if (report.archetype) el("reportArchetype").textContent = report.archetype;
 
-  renderReportMetrics(el("reportMetrics"), report.scores || {}, { jawline: report.jawline, skin: report.skin });
+  renderReportMetrics(el("reportMetrics"), report.scores || {});
 
   if (report.fastest_upgrade) {
     el("reportFastUpgrade").classList.remove("hidden");
@@ -5127,9 +4312,48 @@ function renderReport(report, source){
 // only after 5 rapid taps on the topbar logo (resets after 1.5s idle).
 let __devTapCount = 0;
 let __devTapTimer = null;
-// Dev premium easter-egg removed: the app ships with premium enabled by
-// default on the web preview, so tapping the logo no longer toggles anything.
-window.__devTapLogo = function(){};
+window.__devTapLogo = function(){
+  __devTapCount++;
+  if (__devTapTimer) clearTimeout(__devTapTimer);
+  __devTapTimer = setTimeout(() => { __devTapCount = 0; }, 3000);
+  if (__devTapCount >= 5) {
+    __devTapCount = 0;
+    premium = !premium;
+    premiumUntil = premium ? (Date.now() + 30 * 24 * 60 * 60 * 1000) : null;
+    // Persist dev override so it survives the scan-time checkPremium() call
+    // and a page reload. checkPremium() OR-merges with this flag.
+    try {
+      if (premium) {
+        localStorage.setItem("FACEMAX_DEV_PREMIUM", "1");
+        localStorage.setItem("FACEMAX_DEV_PREMIUM_UNTIL", String(premiumUntil || ""));
+      } else {
+        localStorage.removeItem("FACEMAX_DEV_PREMIUM");
+        localStorage.removeItem("FACEMAX_DEV_PREMIUM_UNTIL");
+      }
+    } catch {}
+    document.body.classList.toggle('is-premium', premium);
+    const pill = el("topPremiumPill");
+    if (pill) {
+      if (premium) {
+        pill.classList.add("premium");
+        pill.hidden = false;
+        pill.innerHTML = `<svg class="pill-ico" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></svg><span>Premium</span>`;
+      } else {
+        pill.classList.remove("premium");
+        pill.hidden = true;
+        pill.innerHTML = "";
+      }
+    }
+    const at = el("accessText");
+    if (at) at.textContent = premium ? "Premium · AI face analysis" : "AI face analysis";
+    if (premium) {
+      try { applyPremiumToResult(); } catch {}
+      showToast("DEV: Premium activated (local only)", 3200);
+    } else {
+      showToast("DEV: Premium turned off", 2400);
+    }
+  }
+};
 
 window.checkPremium = async function(showAlert = false){
   // Dev override: 5-tap logo toggle persists a local flag that wins over
@@ -5141,25 +4365,10 @@ window.checkPremium = async function(showAlert = false){
     const u = localStorage.getItem("FACEMAX_DEV_PREMIUM_UNTIL");
     if (u) devPremiumUntil = Number(u) || null;
   } catch {}
-  // Web preview = testing surface: keep everything unlocked. Native iOS keeps
-  // the real paywall.
-  let isWebTest = false;
-  let forcePaywall = false;
-  let quizUnlocked = false;
-  try { forcePaywall = localStorage.getItem("FACEMAX_FORCE_PAYWALL") === "1"; } catch {}
-  try { quizUnlocked = localStorage.getItem("FACEMAX_QUIZ_UNLOCKED") === "1"; } catch {}
-  // Native iOS keeps the real paywall; only the web preview auto-unlocks. Detect
-  // native via Capacitor directly so the iOS build is never mistaken for web at
-  // boot (this can run before native-bridge.js / window.facemax exists).
-  try { isWebTest = !fmIsNative() && !forcePaywall; } catch {}
   try {
     const res = await fetch(API_BASE + "/api/premium-status?user_id=" + encodeURIComponent(currentUserId()), { cache:"no-store" });
     const data = await res.json();
-    const serverPremium = !!(data.active || data.premium);
-    if ((devPremium || isWebTest) && !serverPremium && !forcePaywall) {
-      try { await fetch(API_BASE + "/api/test-grant?user_id=" + encodeURIComponent(currentUserId())); } catch {}
-    }
-    premium = forcePaywall ? false : (serverPremium || devPremium || isWebTest || quizUnlocked);
+    premium = !!(data.active || data.premium) || devPremium;
     premiumUntil = data.premium_until || data.premium_до || (devPremium ? devPremiumUntil : null);
     document.body.classList.toggle('is-premium', premium);
 
@@ -5180,7 +4389,6 @@ window.checkPremium = async function(showAlert = false){
     return premium;
   } catch (err) {
     console.warn(err);
-    if (isWebTest) { premium = true; document.body.classList.toggle('is-premium', true); }
     if (showAlert) showToast("Could not check status");
     return premium;
   }
@@ -5293,24 +4501,20 @@ window.payLava = async function(plan){
   // 'full' -> monthly. Anything else falls back to monthly.
   const raw = String(plan || "").toLowerCase();
   if (raw === "lifetime") plan = "lifetime";
-  else if (raw === "yearly" || raw === "annual") plan = "yearly";
   else if (raw === "weekly" || raw === "starter") plan = "weekly";
   else plan = "monthly";
   if (premium) { openReport(); return; }
 
   // On iOS / Capacitor native we MUST use Apple In-App Purchase. We route
   // through RevenueCat and confirm with our backend (Apple receipt verify).
-  if (fmIsNative()) {
+  if (window.facemax && window.facemax.native) {
     try {
       // Accept three canonical plan names plus legacy 'starter'/'full'.
       const appleProduct =
         (plan === "weekly" || plan === "starter") ? "weekly" :
         (plan === "lifetime") ? "lifetime" :
-        (plan === "yearly") ? "yearly" :
         "monthly"; // monthly / full / default
-      const res = (window.facemax && typeof window.facemax.purchase === "function")
-        ? await window.facemax.purchase(appleProduct, currentUserId())
-        : { ok: false, error: "revenuecat_unavailable" };
+      const res = await window.facemax.purchase(appleProduct, currentUserId());
       if (res && res.ok) {
         showToast("Premium activated", 3500);
         try { await checkPremium(true); } catch {}
@@ -5318,10 +4522,7 @@ window.payLava = async function(plan){
         return;
       }
       if (res && res.error === "cancelled") return;
-      // No simulator/dev bypass here: scans must stay locked until a real
-      // RevenueCat / Apple entitlement is confirmed. Configure the iOS
-      // RevenueCat public SDK key at the bottom of this file before TestFlight.
-      showToast("Purchase unavailable: configure RevenueCat for iOS", 4200);
+      showToast("Purchase error: " + ((res && res.error) || "unknown"));
       return;
     } catch (err) {
       showToast("Purchase error");
@@ -5367,8 +4568,6 @@ function applyPremiumToResult(){
       lbl.textContent = "Get full AI report (PRO)";
     }
   }
-  // Lock/unlock the extra metrics + upsell card based on premium status.
-  try { if (typeof applyResultLock === "function") applyResultLock(); } catch {}
 }
 
 // =============================================================================
@@ -5439,7 +4638,7 @@ function refreshDailyGreeting(){
 function premiumGate(title, msg){ showGate(title, msg); return false; }
 
 window.openDailyHub = function(){
-  // Premium gate removed — free users see Daily hub and try features. Server gates real AI on 402.
+  if (!premium) { premiumGate("Daily care — Premium", "Premium unlocks the food bloat scanner, water tracker, debloating routines, face exercises and meal plan."); return; }
   refreshDailyGreeting();
   refreshDailyTiles();
   openScreen("daily");
@@ -5540,7 +4739,8 @@ function refreshDailyTiles(){
 
 // ---------- Food scanner ----------
 window.openFoodScan = function(){
-  // Premium gate removed — let everyone open the scanner. Server-side 402 still enforces real quota.
+  if (!premium) { premiumGate("Food scanner — Premium", "Unlock Premium to AI-analyze meals for bloating impact."); return; }
+  // Default to the upload UI; show history if any
   resetFoodScan();
   renderFoodScanHistory();
   openScreen("foodScan");
@@ -5707,7 +4907,6 @@ function closeFaceScanCamera(){
   }
   try { video.pause(); video.srcObject = null; } catch {}
   overlay.classList.add("hidden");
-  _captureTarget = null; // clear any pending onboarding capture target on manual close
 }
 window.closeFaceScanCamera = closeFaceScanCamera;
 
@@ -5722,14 +4921,6 @@ async function snapFaceScanCamera(){
   ctx.translate(w, 0); ctx.scale(-1, 1);
   ctx.drawImage(video, 0, 0, w, h);
   const dataUrl = await downscaleImage(canvas.toDataURL("image/jpeg", 0.92), 900, 0.85);
-  // Onboarding dual-capture: route the shot into front/side instead of the legacy flow.
-  if (_captureTarget) {
-    const t = _captureTarget; _captureTarget = null;
-    closeFaceScanCamera();
-    onbState.which = t;
-    await onbSetPhoto(dataUrl);
-    return;
-  }
   selectedImageData = dataUrl;
   el("previewImg").src = dataUrl;
   el("loadingImg").src = dataUrl;
@@ -5749,12 +4940,6 @@ el("cameraFileInput").addEventListener("change", (e) => {
   const file = e.target.files?.[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
-    if (_captureTarget) {
-      const t = _captureTarget; _captureTarget = null;
-      onbState.which = t;
-      onbSetPhoto(reader.result);
-      return;
-    }
     selectedImageData = reader.result;
     el("previewImg").src = selectedImageData;
     el("loadingImg").src = selectedImageData;
@@ -5768,18 +4953,6 @@ el("cameraFileInput").addEventListener("change", (e) => {
   };
   reader.readAsDataURL(file);
 });
-
-// Onboarding gallery picker (front/side capture screens)
-(function(){
-  const inp = document.getElementById("capFileInput");
-  if (!inp) return;
-  inp.addEventListener("change", (e) => {
-    const file = e.target.files?.[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => { onbSetPhoto(reader.result); };
-    reader.readAsDataURL(file);
-  });
-})();
 
 (function(){
   ["foodScanFile","foodScanCamera"].forEach((id) => {
@@ -5808,9 +4981,8 @@ function downscaleImage(dataUrl, maxDim, quality){
   });
 }
 
-window.runFoodScan = async function(_retried){
+window.runFoodScan = async function(){
   if (!foodScanImage) { showToast("Add a meal photo first"); return; }
-  const _scanImg = el("foodScanScanImg"); if (_scanImg) _scanImg.src = foodScanImage;
   el("foodScanPreviewBlock").classList.add("hidden");
   el("foodScanLoading").classList.remove("hidden");
   el("foodScanResult").classList.add("hidden");
@@ -5822,9 +4994,7 @@ window.runFoodScan = async function(_retried){
     if (res.status === 402) {
       el("foodScanLoading").classList.add("hidden");
       el("foodScanPreviewBlock").classList.remove("hidden");
-      const nowPremium = await checkPremium(false).catch(() => false);
-      if (nowPremium && !_retried) { return runFoodScan(true); }
-      showToast(nowPremium ? "Could not analyze meal. Try again." : "Premium required to scan meals");
+      showGate("Food scanner — Premium", "Activate Premium to unlock AI food bloat analysis.");
       return;
     }
     const data = await res.json().catch(() => null);
@@ -5866,15 +5036,7 @@ function renderFoodScanResult(r){
   const ring = el("bloatRing");
   ring.style.setProperty("--br-pct", score);
   ring.style.setProperty("--br-color", bloatLabelColor(r.bloat_label));
-  (function(){
-    const sEl = el("bloatScore"); const t0 = performance.now(); const dur = 700;
-    function step(now){
-      const p = Math.min(1, (now - t0) / dur);
-      sEl.textContent = Math.round(score * (1 - Math.pow(1 - p, 2)));
-      if (p < 1) requestAnimationFrame(step); else sEl.textContent = score;
-    }
-    requestAnimationFrame(step);
-  })();
+  el("bloatScore").textContent = score;
   el("bloatLabelSm").textContent = "Bloat score";
   const lbl = el("bloatLabel");
   lbl.textContent = r.bloat_label || "Moderate";
@@ -6259,11 +5421,24 @@ const QUIZ_STEPS = [
     emoji: "👋",
     eyebrow: "Welcome",
     title: "Let's unlock your aesthetic potential.",
-    sub: "Answer a <b>few quick questions</b> so our AI can build a glow-up plan tailored to your face — in just 60 seconds.",
+    sub: "Answer <b>10 quick questions</b> so our AI can build a glow-up plan tailored to your face — in just 60 seconds.",
     cta: "Let's start",
     next: () => quizGoTo(1),
   },
-  // 1 — Age
+  // 1 — Gender
+  {
+    type: "single",
+    key: "gender",
+    eyebrow: "Step 1 of 10",
+    title: "What's your gender?",
+    sub: "Your face has unique features. We'll calibrate everything around them.",
+    options: [
+      { e: "👨", v: "male",   t: "Male" },
+      { e: "👩", v: "female", t: "Female" },
+      { e: "🌈", v: "other",  t: "Prefer not to say" },
+    ],
+  },
+  // 2 — Age
   {
     type: "pills",
     key: "age",
@@ -6416,312 +5591,6 @@ function quizStart(){
   quizRender();
 }
 
-/* ============================ ONBOARDING (gender + dual capture) ============================ */
-function onbExampleSrc(gender, which){
-  const g = (gender === "female") ? "female" : "male";
-  return "assets/onboarding/" + g + "-" + (which === "side" ? "side" : "front") + ".jpg";
-}
-
-// Onboarding entry. First launch runs the quiz FIRST and asks gender AFTER the
-// test (onbShowGender is called from quizFinishToAnalyze). The Scan button
-// ("scan" flow) goes straight to the gender picker, then capture.
-function onbStart(flow){
-  // Keep quiz-active styling so the top/bottom chrome stays hidden and the
-  // onboarding gradient background shows across gender + quiz + capture.
-  document.documentElement.classList.add("fm-quiz-active");
-  onbState.flow = (flow === "scan") ? "scan" : "onboarding";
-  onbState.which = "front";
-  // Each fresh entry starts with clean captures so a previous scan's photos
-  // never linger in the oval guide.
-  onbState.front = ""; onbState.side = "";
-  // Pre-select the known gender (e.g. returning user pressing Scan) so they can
-  // continue with one tap, but still see + can change the selection.
-  if (!onbState.gender) { try { onbState.gender = localStorage.getItem("fm_gender") || null; } catch {} }
-  if (onbState.flow === "onboarding") {
-    // Gender is asked after the quiz (see quizFinishToAnalyze).
-    quizStart();
-  } else {
-    onbShowGender();
-  }
-}
-
-// Render + open the gender picker. Used by the Scan flow (before capture) and
-// by the onboarding flow as the last step after the quiz.
-function onbShowGender(){
-  document.documentElement.classList.add("fm-quiz-active");
-  document.querySelectorAll("#genderSelect .gender-card").forEach(c =>
-    c.classList.toggle("selected", !!onbState.gender && c.getAttribute("data-gender") === onbState.gender));
-  const btn = el("genderContinueBtn");
-  if (btn) {
-    btn.disabled = !onbState.gender;
-    const span = btn.querySelector("span");
-    if (span) span.textContent = onbState.gender ? "Continue →" : "Select to continue →";
-  }
-  const eyebrow = el("genderEyebrow");
-  if (eyebrow) eyebrow.textContent = (onbState.flow === "scan") ? "New scan" : "Last step · About you";
-  // The back arrow returns to the menu — only meaningful when a Home exists
-  // (scan flow). Hide it during first-launch onboarding.
-  const backBtn = el("genderBackBtn");
-  if (backBtn) backBtn.style.display = (onbState.flow === "scan") ? "" : "none";
-  openScreen("genderSelect");
-}
-window.onbShowGender = onbShowGender;
-
-// Top-left back arrow on the gender picker: leave the scan flow and return to Home.
-function onbGenderBack(){
-  quizHaptic();
-  document.documentElement.classList.remove("fm-quiz-active");
-  openScreen("home");
-}
-window.onbGenderBack = onbGenderBack;
-
-// When a scan started from the new capture flow fails (no face / bad quality),
-// keep the user inside that flow (retake the front photo) instead of dropping
-// them on the legacy upload screen.
-function onbScanFail(){
-  if (!onbState || !onbState.viaCapture) return false;
-  onbState.viaCapture = false;
-  onbState.which = "front";
-  onbState.front = "";
-  document.documentElement.classList.add("fm-quiz-active");
-  openScreen("capture");
-  try { onbRenderCapture(); } catch {}
-  return true;
-}
-window.onbScanFail = onbScanFail;
-
-// Entry point for the bottom-nav Scan button and Home scan CTAs: always open
-// the gender picker first, then go straight to the front/side photo capture.
-function startGenderScan(){ quizHaptic(); onbStart("scan"); }
-window.startGenderScan = startGenderScan;
-
-function onbSelectGender(gender){
-  quizHaptic();
-  onbState.gender = gender;
-  // Persist so the rest of the app (metrics calibration, Gemini payload) uses it.
-  try { quizState.answers = quizState.answers || {}; quizState.answers.gender = gender; quizSave(); } catch {}
-  try { localStorage.setItem("fm_gender", gender); } catch {}
-  document.querySelectorAll("#genderSelect .gender-card").forEach(c =>
-    c.classList.toggle("selected", c.getAttribute("data-gender") === gender));
-  const btn = el("genderContinueBtn");
-  if (btn) { btn.disabled = false; const sp = btn.querySelector("span"); if (sp) sp.textContent = "Continue →"; }
-  // Pre-load the matching example photos for the capture screens.
-  const exFront = el("capExampleImg");
-  if (exFront) exFront.src = onbExampleSrc(gender, "front");
-}
-
-function onbGenderContinue(){
-  if (!onbState.gender) return;
-  quizHaptic();
-  // Gender is now always the step immediately before capture (scan flow: picker
-  // → capture; onboarding flow: quiz → picker → capture).
-  onbStartCapture();
-}
-
-// Step after the quiz — capture front, then side.
-function onbStartCapture(){
-  onbState.which = "front";
-  openScreen("capture");
-  onbRenderCapture();
-}
-
-function onbRenderCapture(){
-  const which = onbState.which;
-  const gender = onbState.gender || (typeof currentGender === "function" ? currentGender() : "male");
-  const shot = onbState[which];
-  el("captureEyebrow").textContent = which === "side" ? "Photo 2 of 2 · Side" : "Photo 1 of 2 · Front";
-  el("captureTitle").textContent   = which === "side" ? "Now a side photo" : "Take a front photo";
-  el("captureSub").textContent     = which === "side"
-    ? "Turn your head 90° to the side. Same light, neutral face."
-    : "Look straight at the camera, neutral face, good light. No filters.";
-  el("captureProgressBar").style.width = which === "side" ? "90%" : "70%";
-
-  const exImg = el("capExampleImg");
-  const shotImg = el("capShotImg");
-  exImg.src = onbExampleSrc(gender, which);
-
-  const hasShot = !!shot;
-  exImg.classList.toggle("hidden", hasShot);
-  el("capExampleTag").classList.toggle("hidden", hasShot);
-  el("capTips").style.display = hasShot ? "none" : "";
-  shotImg.classList.toggle("hidden", !hasShot);
-  el("capShotBadge").classList.toggle("hidden", !hasShot);
-  if (hasShot) shotImg.src = shot;
-
-  el("capCameraBtn").parentElement.classList.toggle("hidden", hasShot); // .cap-actions
-  el("capContinueBtn").classList.toggle("hidden", !hasShot);
-  el("capRetakeBtn").classList.toggle("hidden", !hasShot);
-
-  // Drag-to-reposition: enable only when a shot is shown. Reset the framing
-  // whenever the photo itself changes (new capture / retake / switch step).
-  const oval = el("capOval");
-  if (oval) oval.classList.toggle("has-shot", hasShot);
-  el("capDragHint").classList.toggle("hidden", !hasShot);
-  if (!hasShot || _capPanSrc !== shot) { _capPanSrc = hasShot ? shot : ""; capResetPan(); }
-}
-
-/* Pan + pinch/scroll zoom of the captured photo inside the oval guide. Purely
- * visual framing for the preview (the full original photo is still what the
- * AI analyzes), so it can't crop the face out of the scan. */
-let _capPan = { x:0, y:0, scale:1 };
-let _capPanSrc = "";
-function capApplyPan(){
-  const img = el("capShotImg");
-  if (img) img.style.transform = `translate(${_capPan.x}px,${_capPan.y}px) scale(${_capPan.scale})`;
-}
-function capResetPan(){ _capPan = { x:0, y:0, scale:1 }; capApplyPan(); }
-function capClampPan(){
-  const oval = el("capOval"); if (!oval) return;
-  const maxX = oval.clientWidth  * (_capPan.scale - 1) / 2;
-  const maxY = oval.clientHeight * (_capPan.scale - 1) / 2;
-  _capPan.x = Math.max(-maxX, Math.min(maxX, _capPan.x));
-  _capPan.y = Math.max(-maxY, Math.min(maxY, _capPan.y));
-}
-function initCapDrag(){
-  const oval = el("capOval"); if (!oval || oval._dragWired) return;
-  oval._dragWired = true;
-  const pts = new Map();
-  let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0, pinchStart = 0, scaleStart = 1;
-  const active = () => oval.classList.contains("has-shot");
-  oval.addEventListener("pointerdown", e => {
-    if (!active()) return;
-    pts.set(e.pointerId, e);
-    try { oval.setPointerCapture(e.pointerId); } catch {}
-    if (pts.size === 1) { dragging = true; sx = e.clientX; sy = e.clientY; ox = _capPan.x; oy = _capPan.y; }
-    else if (pts.size === 2) {
-      const a = [...pts.values()];
-      pinchStart = Math.hypot(a[0].clientX - a[1].clientX, a[0].clientY - a[1].clientY);
-      scaleStart = _capPan.scale;
-    }
-  });
-  oval.addEventListener("pointermove", e => {
-    if (!active() || !pts.has(e.pointerId)) return;
-    pts.set(e.pointerId, e);
-    if (pts.size >= 2) {
-      const a = [...pts.values()];
-      const d = Math.hypot(a[0].clientX - a[1].clientX, a[0].clientY - a[1].clientY);
-      _capPan.scale = Math.max(1, Math.min(4, scaleStart * (d / (pinchStart || d))));
-      capClampPan(); capApplyPan();
-    } else if (dragging) {
-      _capPan.x = ox + (e.clientX - sx);
-      _capPan.y = oy + (e.clientY - sy);
-      capClampPan(); capApplyPan();
-    }
-  });
-  const end = e => { pts.delete(e.pointerId); if (pts.size < 2) pinchStart = 0; if (pts.size === 0) dragging = false; };
-  oval.addEventListener("pointerup", end);
-  oval.addEventListener("pointercancel", end);
-  oval.addEventListener("wheel", e => {
-    if (!active()) return;
-    e.preventDefault();
-    _capPan.scale = Math.max(1, Math.min(4, _capPan.scale - e.deltaY * 0.0015));
-    capClampPan(); capApplyPan();
-  }, { passive:false });
-}
-if (document.readyState !== "loading") initCapDrag();
-else document.addEventListener("DOMContentLoaded", initCapDrag);
-
-function onbOpenCamera(){
-  _captureTarget = onbState.which;
-  if (typeof openFaceScanCamera === "function") openFaceScanCamera();
-}
-
-function onbPickFromGallery(){
-  _captureTarget = onbState.which;
-  const inp = el("capFileInput");
-  if (inp) { inp.value = ""; inp.click(); }
-}
-
-async function onbSetPhoto(dataUrl){
-  let out = dataUrl;
-  try { if (typeof downscaleImage === "function") out = await downscaleImage(dataUrl, 1024); } catch {}
-  onbState[onbState.which] = out;
-  quizHaptic();
-  onbRenderCapture();
-}
-
-function onbRetake(){
-  onbState[onbState.which] = "";
-  onbRenderCapture();
-}
-
-function onbCaptureContinue(){
-  quizHaptic();
-  if (onbState.which === "front") {
-    onbState.which = "side";
-    onbRenderCapture();
-  } else {
-    onbProceedToScan();
-  }
-}
-
-function onbCaptureBack(){
-  quizHaptic();
-  if (onbState.which === "side") {
-    onbState.which = "front";
-    onbRenderCapture();
-  } else if (onbState.flow === "scan") {
-    // Scan flow: front photo's back button returns to the gender picker.
-    onbStart("scan");
-  } else {
-    // Onboarding flow: back to the last quiz question.
-    document.documentElement.classList.add("fm-quiz-active");
-    openScreen("quiz");
-    quizState.step = Math.max(1, QUIZ_STEPS.length - 1);
-    quizSave();
-    quizRender();
-  }
-}
-
-function onbProceedToScan(){
-  // Leaving onboarding for the real scan/loading/result flow — restore normal chrome.
-  document.documentElement.classList.remove("fm-quiz-active");
-  // Remember the scan came from the new capture flow so a failure returns here
-  // (retake) instead of the legacy upload screen.
-  onbState.viaCapture = true;
-  // The front photo is what the AI analyzes; the side photo is sent along for context.
-  selectedImageData = onbState.front || selectedImageData;
-  selectedSideImageData = onbState.side || "";
-  try { if (typeof applySelectedPhoto === "function" && selectedImageData) applySelectedPhoto(selectedImageData); } catch {}
-  const li = el("loadingImg"); if (li && selectedImageData) li.src = selectedImageData;
-  if (typeof window.startScan === "function") window.startScan();
-}
-
-// Animated "Uploading your data · NN%" line on the loading screen.
-let _onbUploadTimer = null;
-function onbAnimateUpload(){
-  const node = el("scanUploading");
-  if (!node) return;
-  clearInterval(_onbUploadTimer);
-  let p = 0;
-  node.textContent = "Uploading your data · 0%";
-  _onbUploadTimer = setInterval(() => {
-    p += Math.max(1, Math.round((100 - p) * 0.08));
-    if (p >= 99) { p = 100; clearInterval(_onbUploadTimer); }
-    node.textContent = p < 100 ? ("Uploading your data · " + p + "%") : "Running AI face analysis…";
-  }, 140);
-}
-
-// Per latest request, nothing in the app is blurred: premium is on and every
-// scan result is shown fully (no teaser, no locked metrics). This clears any
-// leftover lock/teaser state so the result is always 100% visible.
-function applyResultLock(){
-  const result = el("result");
-  if (!result) return;
-  result.classList.remove("fm-teaser", "fm-result-locked");
-  result.querySelectorAll(".metric-row.is-locked").forEach(row => row.classList.remove("is-locked"));
-}
-window.onbStart = onbStart;
-window.onbSelectGender = onbSelectGender;
-window.onbGenderContinue = onbGenderContinue;
-window.onbStartCapture = onbStartCapture;
-window.onbOpenCamera = onbOpenCamera;
-window.onbPickFromGallery = onbPickFromGallery;
-window.onbCaptureContinue = onbCaptureContinue;
-window.onbCaptureBack = onbCaptureBack;
-window.onbRetake = onbRetake;
-window.applyResultLock = applyResultLock;
-
 function quizGoTo(step){
   if (step < 0) step = 0;
   if (step >= QUIZ_STEPS.length) { quizFinishToAnalyze(); return; }
@@ -6744,12 +5613,6 @@ function quizRender(){
   const pct = Math.round((quizState.step / QUIZ_STEPS.length) * 100);
   el("quizProgressBar").style.width = pct + "%";
   el("quizBackBtn").style.visibility = quizState.step > 0 ? "visible" : "hidden";
-
-  // Recompute the "Step X of N" eyebrow dynamically so adding/removing quiz
-  // steps (e.g. the gender step now lives on its own screen) never desyncs
-  // the hardcoded labels.
-  const totalQ = QUIZ_STEPS.length - 1; // exclude the intro
-  if (step.type !== "intro") { step.eyebrow = "Step " + quizState.step + " of " + totalQ; }
 
   if (step.type === "intro") {
     body.innerHTML = `
@@ -6840,15 +5703,13 @@ function quizPick(key, value, mode){
     const i = cur.indexOf(value);
     if (i >= 0) cur.splice(i, 1); else cur.push(value);
     quizState.answers[key] = cur;
-    quizSave();
-    // Multi-select stays on the step (re-render to refresh the Continue state).
-    quizRender();
-    return;
+  } else {
+    quizState.answers[key] = value;
   }
-  quizState.answers[key] = value;
   quizSave();
-  // Re-render so the tapped card shows its selected state and the Continue
-  // button (pinned at the bottom) becomes enabled. The user taps Continue.
+  // Always re-render so the Continue button gets enabled. We intentionally do
+  // NOT auto-advance: feedback from users showed inconsistent scrolling was
+  // disorienting, so every step now waits for an explicit Continue tap.
   quizRender();
 }
 
@@ -6856,11 +5717,31 @@ function quizContinue(){ quizHaptic(); quizGoTo(quizState.step + 1); }
 
 function quizFinishToAnalyze(){
   quizHaptic();
-  // Set done flag now so a refresh mid-flow doesn't re-start the quiz.
+  // Set done flag now so refresh during analyze doesn't re-start quiz
   quizSetDone();
-  // Paywall-first funnel: after the quiz, show the subscription plans.
-  // Face scanning / AI analysis is only allowed after RevenueCat purchase unlock.
-  quizShowPaywall();
+  openScreen("quizAnalyze");
+  // Step through the checklist + step messages over ~4.6s
+  const stepEl = el("qaStep");
+  const msgs = [
+    "Analyzing your <b>quiz answers</b>…",
+    "Matching goals to <b>your profile</b>…",
+    "Generating brutal <b>key insights</b> from your scan…",
+    "Personalizing skin · jawline · eye-area routine…",
+    "Your aesthetic profile is <b>ready</b>.",
+  ];
+  let i = 0;
+  function tick(){
+    if (stepEl) {
+      stepEl.style.opacity = 0;
+      setTimeout(() => { stepEl.innerHTML = msgs[Math.min(i, msgs.length - 1)]; stepEl.style.opacity = 1; }, 220);
+    }
+    const checks = document.querySelectorAll("#qaChecklist .qa-check");
+    const idx = Math.min(i, checks.length - 1);
+    checks.forEach((c, j) => c.classList.toggle("done", j <= idx - 1));
+    i++;
+    if (i <= msgs.length) setTimeout(tick, 950); else setTimeout(quizShowResult, 600);
+  }
+  tick();
 }
 
 function quizGoalsLabel(){
@@ -7117,14 +5998,6 @@ function quizShowResult(){
   }
 }
 
-// "Scan my face" button on the test-result screen → gender picker → capture.
-function quizResultToScan(){
-  quizHaptic();
-  onbState.flow = "onboarding";
-  onbShowGender();
-}
-window.quizResultToScan = quizResultToScan;
-
 function quizShowPaywall(){
   openScreen("quizPaywall");
   el("qpGoals").innerHTML = quizGoalsLabel();
@@ -7137,7 +6010,7 @@ function quizShowPaywall(){
 
 let _quizSelectedPlan = "monthly";
 function quizSelectPlan(plan){
-  const allowed = ["weekly", "monthly", "yearly"];
+  const allowed = ["weekly", "monthly", "lifetime"];
   _quizSelectedPlan = allowed.includes(plan) ? plan : "monthly";
   document.querySelectorAll("#qpPlans .qp-plan").forEach(p => p.classList.toggle("selected", p.dataset.plan === _quizSelectedPlan));
   quizHaptic();
@@ -7145,56 +6018,19 @@ function quizSelectPlan(plan){
 
 async function quizCheckout(){
   quizHaptic();
-  const native = fmIsNative();
   const btn = el("quizPayBtn");
   if (btn) { btn.disabled = true; btn.querySelector("span").textContent = "Opening checkout…"; }
   try {
-    if (native) {
-      // Native iOS: real Apple In-App Purchase via RevenueCat.
-      await window.payLava(_quizSelectedPlan);
-    } else {
-      // Web preview has no real billing (the shipped app charges through the
-      // App Store). Simulate a successful unlock so the scan + analysis + result
-      // can be reviewed end-to-end on the web build.
-      try { localStorage.setItem("FACEMAX_QUIZ_UNLOCKED", "1"); } catch {}
-      premium = true;
-      try { document.body.classList.toggle("is-premium", true); } catch {}
-      showToast("Premium activated", 2500);
-    }
+    await window.payLava(_quizSelectedPlan);
   } catch (err) { showToast("Checkout error"); }
   if (btn) { btn.disabled = false; btn.querySelector("span").textContent = "Unlock my full analysis"; }
-  // After a successful purchase/unlock, resume the deferred scan so the photo is
-  // finally analyzed; if nothing is pending, just close the paywall. On native
-  // the entitlement can take a moment to confirm after the Apple purchase, so
-  // we poll premium briefly instead of guessing a single fixed delay (which
-  // could drop the user to Home before the scan ever resumes).
-  let _resumeTries = 0;
-  const _resumeAfterPay = async () => {
-    if (native) { try { await checkPremium(false); } catch {} }
-    if (premium || hasUnlockedAccess()) {
-      if (!quizResumePendingScan()) quizPaywallClose();
-      return;
-    }
-    if (++_resumeTries < 12) setTimeout(_resumeAfterPay, 600);
-  };
-  setTimeout(_resumeAfterPay, native ? 300 : 120);
+  // If premium became active during checkout (native StoreKit), close paywall and go home.
+  setTimeout(() => {
+    if (premium) { quizPaywallClose(); }
+  }, 800);
 }
-
-// Resume the analysis that was deferred until payment. Called after a
-// successful purchase. Returns true if a pending scan was started.
-function quizResumePendingScan(){
-  if (!(window.onbState && onbState.pendingScan && (premium || hasUnlockedAccess()))) return false;
-  onbState.pendingScan = false;
-  document.documentElement.classList.remove("fm-quiz-active");
-  if (typeof window.startScan === "function") { window.startScan(); return true; }
-  return false;
-}
-window.quizResumePendingScan = quizResumePendingScan;
 
 function quizPaywallClose(){
-  // Leaving the paywall without paying: drop the deferred analysis so it can't
-  // fire later unexpectedly.
-  if (window.onbState) onbState.pendingScan = false;
   document.documentElement.classList.remove("fm-quiz-active");
   openScreen("home");
 }
@@ -7299,7 +6135,7 @@ checkPremium(false).then(() => {
 setTimeout(async () => {
   const isFirstLaunch = !quizIsDone();
   if (isFirstLaunch) {
-    onbStart();
+    quizStart();
     // Give the welcome animation time to play (quizSlide 420ms + quizPop 550ms,
     // plus a beat for the user to register the screen) before the native iOS
     // notification dialog covers it.
@@ -7341,16 +6177,6 @@ document.addEventListener("visibilitychange", () => {
   window.FACEMAX_REVENUECAT_API_KEY = "";
 </script>
 <script src="js/native-bridge.js"></script>
-
-<svg width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><defs>
-<linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4ADE80"/><stop offset="50%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#EF4444"/></linearGradient>
-<linearGradient id="ringGradHigh" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4ADE80"/><stop offset="100%" stop-color="#22C55E"/></linearGradient>
-<linearGradient id="ringGradMid" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#FB923C"/></linearGradient>
-<linearGradient id="ringGradLow" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#EF4444"/><stop offset="100%" stop-color="#FB923C"/></linearGradient>
-</defs></svg>
-
-<script>(function(){try{function barGrad(n){if(n>=75)return'linear-gradient(90deg,#4ADE80,#22C55E)';if(n>=60)return'linear-gradient(90deg,#A3E635,#4ADE80)';if(n>=45)return'linear-gradient(90deg,#FBBF24,#A3E635)';if(n>=30)return'linear-gradient(90deg,#FB923C,#FBBF24)';return'linear-gradient(90deg,#EF4444,#FB923C)';}function applyBarColors(){try{document.querySelectorAll('#result .metric-row').forEach(function(row){var valEl=row.querySelector('.metric-row-val');var fill=row.querySelector('.metric-row-fill');if(!valEl||!fill)return;var n=parseInt((valEl.textContent||'').replace(/[^0-9]/g,''),10);if(!isNaN(n)&&n>0){fill.style.width=n+'%';fill.style.background=barGrad(n);}});}catch(_){}}setInterval(applyBarColors,800);}catch(e){}})();</script>
-<script>(function(){try{function syncScoreBar(){try{var line=document.querySelector('#result .score-bar-line');var marker=document.getElementById('resultScoreMarker');if(!line||!marker)return;var w=marker.style.left||'0%';line.style.setProperty('--bar-w',w);}catch(_){}}setInterval(syncScoreBar,300);}catch(e){}})();</script>
 </body>
 </html>
 
