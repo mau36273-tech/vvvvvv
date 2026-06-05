@@ -5,7 +5,7 @@
  *   - Detect the runtime (web vs native iOS).
  *   - Pick a photo (camera or library) via the best available picker.
  *   - Trigger haptics on key buttons.
- *   - Drive subscription purchases (RevenueCat on native, Lava on web).
+ *   - Drive subscription purchases (RevenueCat on native, web purchases disabled).
  *
  * The web frontend should never crash if native plugins are missing — every
  * native path falls back to the existing web behavior.
@@ -86,8 +86,9 @@
 
   // Mapping between our backend plan names and Apple product IDs.
   facemax.products = {
-    weekly:   { appleId: "ai.facemax.app.weekly",   plan: "starter", entitlement: "premium" },
-    monthly:  { appleId: "ai.facemax.app.monthly",  plan: "full",    entitlement: "premium" },
+    weekly:   { appleId: "ai.facemax.app.weekly",   plan: "starter",  entitlement: "premium" },
+    monthly:  { appleId: "ai.facemax.app.monthly",  plan: "full",     entitlement: "premium" },
+    yearly:   { appleId: "ai.facemax.app.yearly",   plan: "yearly",   entitlement: "premium" },
     lifetime: { appleId: "ai.facemax.app.lifetime", plan: "lifetime", entitlement: "premium" },
   };
 
@@ -110,6 +111,43 @@
     return purchasesReady;
   }
 
+  // Fetch live prices from RevenueCat and cache them.
+  // Returns a map: { weekly: "$2.99", monthly: "$9.99", yearly: "$39.99", lifetime: "$49.99" }
+  // Falls back to the hardcoded defaults if RevenueCat is unavailable.
+  const _defaultPrices = {
+    weekly: "$2.90", monthly: "$9.90", yearly: "$39.90", lifetime: "$49.90"
+  };
+  let _cachedPrices = null;
+
+  facemax.loadPrices = async function (userId) {
+    if (_cachedPrices) return _cachedPrices;
+    if (!facemax.native) { _cachedPrices = Object.assign({}, _defaultPrices); return _cachedPrices; }
+    try {
+      const ready = await initRevenueCat(userId);
+      if (!ready) { _cachedPrices = Object.assign({}, _defaultPrices); return _cachedPrices; }
+      const Purchases = window.Capacitor.Plugins.Purchases;
+      // getOfferings returns all configured offerings with full product details.
+      const { offerings } = await Purchases.getOfferings();
+      const current = offerings && offerings.current;
+      const packages = (current && current.availablePackages) || [];
+      const map = Object.assign({}, _defaultPrices);
+      for (const pkg of packages) {
+        const price = pkg.product && pkg.product.priceString;
+        if (!price) continue;
+        const id = (pkg.product.productIdentifier || "").toLowerCase();
+        if (id.includes("weekly"))   map.weekly   = price;
+        if (id.includes("monthly"))  map.monthly  = price;
+        if (id.includes("yearly"))   map.yearly   = price;
+        if (id.includes("lifetime")) map.lifetime = price;
+      }
+      _cachedPrices = map;
+    } catch (e) {
+      console.warn("[facemax] loadPrices failed, using defaults:", e);
+      _cachedPrices = Object.assign({}, _defaultPrices);
+    }
+    return _cachedPrices;
+  };
+
   // Buy a product and confirm with our backend.
   // Returns { ok, premium_until, error }.
   facemax.purchase = async function (planName, userId) {
@@ -130,10 +168,8 @@
         && customerInfo.entitlements.active[product.entitlement];
       if (!entitlement) return { ok: false, error: "entitlement_inactive" };
 
-      // Forward the transaction JWS to our backend so the same KV that the
-      // web frontend uses stays in sync. RevenueCat keeps the canonical
-      // entitlement, but the backend mirror means the web can also unlock.
-      const tx = entitlement.latestPurchaseDate ? customerInfo : null;
+      // Forward userId to our backend so the KV mirror stays in sync with RevenueCat.
+      // Real JWS verification arrives via Apple S2S webhook; here we only sync the userId.
       const apiBase = (window.API_BASE || "https://facemax-api.voou96329.workers.dev");
       try {
         await fetch(apiBase + "/api/apple-receipt-verify", {
@@ -141,12 +177,8 @@
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
             user_id: userId,
-            // RevenueCat purchaseProduct returns the StoreKit transaction info
-            // wrapped in customerInfo.originalAppUserId etc.; we forward what we
-            // have. The backend will gracefully fall back to RevenueCat webhook
-            // if the JWS is missing.
-            transaction_jws: customerInfo && customerInfo.originalApplicationVersion ? null : null,
-            revenuecat_app_user_id: customerInfo && customerInfo.originalAppUserId || userId,
+            revenuecat_app_user_id: (customerInfo && customerInfo.originalAppUserId) || userId,
+            // JWS придёт через Apple S2S webhook — здесь только синхронизируем userId
           }),
         });
       } catch (e) { /* non-fatal */ }
@@ -188,7 +220,6 @@
   const NOTIF_ID = {
     DAILY: 1001,
     RESCAN_7D: 1002,
-    FREE_SCAN_LOW: 1003,
     STREAK: 1004,
     PAYWALL_RETURN: 1005,
   };
@@ -284,6 +315,20 @@
         return true;
       } catch (e) { return false; }
     },
+  };
+
+  // -------------------- In-App Review --------------------
+
+  facemax.requestReview = async function () {
+    if (!facemax.native) return;
+    try {
+      const { RateApp } = await import(
+        "@capacitor-community/rate-app"
+      ).catch(() => ({}));
+      if (RateApp && typeof RateApp.requestReview === "function") {
+        await RateApp.requestReview();
+      }
+    } catch (e) { /* ignore */ }
   };
 
   // -------------------- Status bar / safe area --------------------

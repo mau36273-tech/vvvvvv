@@ -20,12 +20,67 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>facemaxaiapp.com</key>
+			<dict>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<false/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+			<key>googleapis.com</key>
+			<dict>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<false/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+			<key>gstatic.com</key>
+			<dict>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<false/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+			<key>jsdelivr.net</key>
+			<dict>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<false/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+			<key>workers.dev</key>
+			<dict>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<false/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>FaceMax AI uses your camera to capture a selfie for facial analysis. A resized thumbnail (max 768px) is sent to our secure server for AI analysis via Google Gemini and is not stored after processing. Meal photos are also analyzed the same way for nutritional information.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>FaceMax AI saves your before/after progress photos to your library so you can share or revisit them later.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>FaceMax AI uses your photo library so you can pick an existing selfie or meal photo. A resized thumbnail (max 768px) is sent to our secure server for AI analysis via Google Gemini and is not stored after processing.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>UIRequiresFullScreen</key>
+	<true/>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleLightContent</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -37,64 +92,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	<key>UIStatusBarStyle</key>
-	<string>UIStatusBarStyleLightContent</string>
-	<key>UIRequiresFullScreen</key>
-	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>FaceMax AI uses your camera to analyze facial symmetry locally on your device and scan meals for nutritional info. Your photos are never stored or uploaded to our servers.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>FaceMax AI uses your photo library so you can pick an existing selfie or meal photo for AI analysis instead of taking a new one.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>FaceMax AI saves your before/after progress photos to your library so you can share or revisit them later.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>FaceMax AI does not record audio. This entry is required by iOS for camera use only.</string>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>FaceMax AI does not track you across other apps. Your selfies and meal photos are only used for the analysis you request.</string>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<false/>
-		<key>NSExceptionDomains</key>
-		<dict>
-			<key>workers.dev</key>
-			<dict>
-				<key>NSIncludesSubdomains</key>
-				<true/>
-				<key>NSExceptionRequiresForwardSecrecy</key>
-				<false/>
-			</dict>
-			<key>facemaxaiapp.com</key>
-			<dict>
-				<key>NSIncludesSubdomains</key>
-				<true/>
-				<key>NSExceptionRequiresForwardSecrecy</key>
-				<false/>
-			</dict>
-			<key>googleapis.com</key>
-			<dict>
-				<key>NSIncludesSubdomains</key>
-				<true/>
-				<key>NSExceptionRequiresForwardSecrecy</key>
-				<false/>
-			</dict>
-			<key>gstatic.com</key>
-			<dict>
-				<key>NSIncludesSubdomains</key>
-				<true/>
-				<key>NSExceptionRequiresForwardSecrecy</key>
-				<false/>
-			</dict>
-			<key>jsdelivr.net</key>
-			<dict>
-				<key>NSIncludesSubdomains</key>
-				<true/>
-				<key>NSExceptionRequiresForwardSecrecy</key>
-				<false/>
-			</dict>
-		</dict>
-	</dict>
 </dict>
 </plist>
